@@ -1,0 +1,348 @@
+@charset "UTF-8";
+/* CSS Document */
+
+.table td, .table th {
+  padding: 1em;
+  font-size: 1.5rem;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.dataTables_length .custom-select {
+  /* width: auto; */
+  position: relative;
+  top: 3px;
+}
+
+.dataTables_length label {
+  white-space: nowrap;
+  text-align: left;
+  font-size: 1.3rem;
+}
+
+table.dataTable {
+  clear: both;
+  margin-top: 6px !important;
+  margin-bottom: 6px !important;
+  max-width: none !important;
+  border-collapse: separate !important;
+  border-spacing: 0;
+}
+
+table.dataTable td, table.dataTable th {
+  -webkit-box-sizing: content-box;
+  box-sizing: content-box;
+}
+
+table.dataTable td.dataTables_empty, table.dataTable th.dataTables_empty {
+  text-align: center;
+}
+
+table.dataTable.nowrap th, table.dataTable.nowrap td {
+  white-space: nowrap;
+}
+
+div.dataTables_wrapper div.dataTables_length label {
+  font-weight: normal;
+  text-align: left;
+  white-space: nowrap;
+}
+
+div.dataTables_wrapper div.dataTables_length select {
+  width: auto;
+  display: inline-block;
+}
+
+div.dataTables_wrapper div.dataTables_filter {
+  text-align: right;
+}
+
+div.dataTables_wrapper div.dataTables_filter label {
+  font-weight: normal;
+  white-space: nowrap;
+  text-align: left;
+}
+
+div.dataTables_wrapper div.dataTables_filter input {
+  margin-left: 0.5em;
+  display: inline-block;
+  width: auto;
+}
+
+div.dataTables_wrapper div.dataTables_info {
+  padding-top: 0.85em;
+  white-space: nowrap;
+}
+
+div.dataTables_wrapper div.dataTables_paginate {
+  margin: 0;
+  white-space: nowrap;
+  text-align: right;
+}
+
+div.dataTables_wrapper div.dataTables_paginate ul.pagination, ul.pagination {
+  margin: 2px 0;
+  white-space: nowrap;
+  justify-content: flex-end;
+}
+
+div.dataTables_wrapper div.dataTables_processing {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 200px;
+  margin-left: -100px;
+  margin-top: -26px;
+  text-align: center;
+  padding: 1em 0;
+}
+
+table.dataTable thead>tr>th.sorting_asc, table.dataTable thead>tr>th.sorting_desc, table.dataTable thead>tr>th.sorting, table.dataTable thead>tr>td.sorting_asc, table.dataTable thead>tr>td.sorting_desc, table.dataTable thead>tr>td.sorting {
+  padding-right: 30px;
+}
+
+table.dataTable thead>tr>th:active, table.dataTable thead>tr>td:active {
+  outline: none;
+}
+
+table.dataTable thead .sorting, table.dataTable thead .sorting_asc, table.dataTable thead .sorting_desc, table.dataTable thead .sorting_asc_disabled, table.dataTable thead .sorting_desc_disabled {
+  cursor: pointer;
+  position: relative;
+}
+
+table.dataTable thead .sorting:before, table.dataTable thead .sorting:after, table.dataTable thead .sorting_asc:before, table.dataTable thead .sorting_asc:after, table.dataTable thead .sorting_desc:before, table.dataTable thead .sorting_desc:after, table.dataTable thead .sorting_asc_disabled:before, table.dataTable thead .sorting_asc_disabled:after, table.dataTable thead .sorting_desc_disabled:before, table.dataTable thead .sorting_desc_disabled:after {
+  position: absolute;
+  bottom: 0.9em;
+  display: block;
+  opacity: 0.3;
+}
+
+table.dataTable thead .sorting:before, table.dataTable thead .sorting_asc:before, table.dataTable thead .sorting_desc:before, table.dataTable thead .sorting_asc_disabled:before, table.dataTable thead .sorting_desc_disabled:before {
+  right: 1em;
+  content: "\2191";
+}
+
+table.dataTable thead .sorting:after, table.dataTable thead .sorting_asc:after, table.dataTable thead .sorting_desc:after, table.dataTable thead .sorting_asc_disabled:after, table.dataTable thead .sorting_desc_disabled:after {
+  right: 0.5em;
+  content: "\2193";
+}
+
+table.dataTable thead .sorting_asc:before, table.dataTable thead .sorting_desc:after {
+  opacity: 1;
+}
+
+table.dataTable thead .sorting_asc_disabled:before, table.dataTable thead .sorting_desc_disabled:after {
+  opacity: 0;
+}
+
+div.dataTables_scrollHead table.dataTable {
+  margin-bottom: 0 !important;
+}
+
+div.dataTables_scrollBody table {
+  border-top: none;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+div.dataTables_scrollBody table thead .sorting:before, div.dataTables_scrollBody table thead .sorting_asc:before, div.dataTables_scrollBody table thead .sorting_desc:before, div.dataTables_scrollBody table thead .sorting:after, div.dataTables_scrollBody table thead .sorting_asc:after, div.dataTables_scrollBody table thead .sorting_desc:after {
+  display: none;
+}
+
+div.dataTables_scrollBody table tbody tr:first-child th, div.dataTables_scrollBody table tbody tr:first-child td {
+  border-top: none;
+}
+
+div.dataTables_scrollFoot>.dataTables_scrollFootInner {
+  box-sizing: content-box;
+}
+
+div.dataTables_scrollFoot>.dataTables_scrollFootInner>table {
+  margin-top: 0 !important;
+  border-top: none;
+}
+
+table.dataTable.table-sm>thead>tr>th {
+  padding-right: 20px;
+}
+
+table.dataTable.table-sm .sorting:before, table.dataTable.table-sm .sorting_asc:before, table.dataTable.table-sm .sorting_desc:before {
+  top: 5px;
+  right: 0.85em;
+}
+
+table.dataTable.table-sm .sorting:after, table.dataTable.table-sm .sorting_asc:after, table.dataTable.table-sm .sorting_desc:after {
+  top: 5px;
+}
+
+table.table-bordered.dataTable th, table.table-bordered.dataTable td {
+  border-left-width: 0;
+}
+
+table.table-bordered.dataTable th:last-child, table.table-bordered.dataTable th:last-child, table.table-bordered.dataTable td:last-child, table.table-bordered.dataTable td:last-child {
+  border-right-width: 0;
+}
+
+table.table-bordered.dataTable tbody th, table.table-bordered.dataTable tbody td {
+  border-bottom-width: 0;
+}
+
+div.dataTables_scrollHead table.table-bordered {
+  border-bottom-width: 0;
+}
+
+div.table-responsive>div.dataTables_wrapper>div.row {
+  margin: 0;
+}
+
+div.table-responsive>div.dataTables_wrapper>div.row>div[class^="col-"]:first-child {
+  padding-left: 0;
+}
+
+div.table-responsive>div.dataTables_wrapper>div.row>div[class^="col-"]:last-child {
+  padding-right: 0;
+}
+
+@media screen and (max-width: 767px) {
+  div.dataTables_wrapper div.dataTables_length, div.dataTables_wrapper div.dataTables_filter, div.dataTables_wrapper div.dataTables_info, div.dataTables_wrapper div.dataTables_paginate {
+    text-align: center;
+  }
+}
+
+.table td a {
+  color: #727cf5;
+  text-decoration: none;
+}
+
+.table td a i {
+  color: #aabbc5;
+  font-size: 1.8rem;
+  padding: 0 3px;
+}
+
+.table .nodata {
+  line-height: 100px;
+}
+
+.table.table-middle td, .table.table-middle th {
+  vertical-align: middle;
+}
+
+.table td a, .table td span.text-cut, .table td em.text-cut {
+  display: inline-block;
+  max-width: 500px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-style: normal;
+}
+
+.col-xl-6 .table td em.text-cut {
+  max-width: 300px;
+}
+
+.dashboard .table td a, .dashboard .table td span.text-cut {
+  max-width: 200px;
+}
+
+.dashboard .table tr.pointer {
+  cursor: pointer;
+}
+
+.dashboard .table tr:hover .text-cut {
+  color: #727cf5;
+}
+
+.table td .toy-thumbnail {
+  max-width: 150px;
+  max-height: 150px;
+  min-width: 80px;
+  height: auto;
+  width: 40%;
+}
+
+.multiple-check .custom-control-inline {
+  margin-bottom: 7px;
+  margin-right: 7px;
+}
+
+.table tfoot td {
+  font-weight: 700;
+}
+
+.table td .custom-radio .custom-control-label::before {
+  position: absolute;
+  top: 4px;
+}
+
+.table td .custom-control-label::after {
+  top: 4px;
+}
+
+.table td:first-child .custom-control-label::after {
+  top: 2px;
+}
+
+.table td.text-br {
+  white-space: pre-line;
+  text-align: left;
+  max-width: 300px
+}
+
+/* .form-group .custom-control.custom-radio.custom-control-inline {
+  line-height: 40px;
+}
+
+.form-group .custom-control-input:checked~.custom-control-label::before {
+  position: absolute;
+  top: 11px;
+}
+
+.form-group .custom-radio .custom-control-input:checked~.custom-control-label::after {
+  top: 11px;
+}
+
+.form-group .custom-radio .custom-control-label::before {
+  position: absolute;
+  top: 11px;
+} */
+
+.card-body .item-box {
+  position: relative;
+  border-radius: 10px;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  -ms-border-radius: 10px;
+  -o-border-radius: 10px;
+  border: 1px solid #dadce0;
+  background: #f6f8ff;
+  width: 99%;
+  margin: 0 auto 20px auto;
+  padding: 40px 10px 10px;
+}
+
+.card-body .item-box .item-btn-group {
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.card-body .item-box .item-btn-group button i {
+  margin-right: 5px;
+  font-size: 1.6rem;
+  position: relative;
+  top: 2px;
+}
+
+.card-body .item-box .item-btn-group button:nth-child(2) {
+  border-top-right-radius: 10px;
+}
+
+.table-middle td label {
+  position: relateve;
+  top: 3px
+}
+
+#accessIpList .form-control.w-100 {
+	min-width:200px;
+}

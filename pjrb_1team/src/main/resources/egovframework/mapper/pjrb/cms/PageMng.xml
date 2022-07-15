@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="pageMngDAO">
+
+	<select id="selectPageMngList" resultType="egovMap">
+		SELECT   PAGE_ID	          
+	   			,PAGE_NM       
+       			,PAGE_CONTENTS 
+       			,USE_YN        
+       			,CDATE         
+       			,CNAME         
+       			,MDATE         
+       			,MNAME         
+		FROM TB_PAGEMNG
+		where 1=1
+		<if test='useYn != null and useYn != ""'>
+			AND USE_YN = #{useYn}
+		</if>
+		<if test='searchCnd != null and searchCnd != "" and searchCnd == "0"'>
+			AND PAGE_NM LIKE CONCAT('%',#{searchWrd},'%')
+		</if>
+		ORDER BY CDATE DESC
+		LIMIT #{recordCountPerPage} OFFSET #{firstIndex}       
+	
+	</select>
+	
+	<select id="selectPageMngListCnt" resultType="int">
+		SELECT  COUNT(*)        
+		FROM TB_PAGEMNG
+		WHERE 1=1
+		<if test='useYn != null and useYn != ""'>
+			AND USE_YN = #{useYn}
+		</if>
+		<if test='searchCnd != null and searchCnd != "" and searchCnd == "0"'>
+			AND PAGE_NM LIKE CONCAT('%',#{searchWrd},'%')
+		</if>
+	</select>
+	
+	<select id="selectPageMngDetail" resultType="egovMap">
+		SELECT  PAGE_ID	
+			   ,PAGE_NM       
+		       ,PAGE_CONTENTS 
+		       ,USE_YN        
+		       ,CDATE         
+		       ,CNAME 
+		       ,MDATE
+		       ,MNAME
+		from TB_PAGEMNG
+		WHERE PAGE_ID = #{pageId}  
+	</select>
+	
+	<insert id="insertPageMng">
+		INSERT INTO TB_PAGEMNG
+			(
+				PAGE_ID
+			   ,PAGE_NM
+			   ,PAGE_CONTENTS
+			   ,USE_YN
+			   ,CDATE
+			   ,CNAME
+			)
+		VALUES
+			(
+				#{pageId}
+			   ,#{pageNm}
+			   ,#{pageContents}
+			   ,#{useYn}
+			   ,now()
+			   ,#{cname}
+			)
+	</insert>
+	
+	<update id="updatePageMng">
+		UPDATE TB_PAGEMNG
+			SET PAGE_NM        =    #{pageNm}  
+	           ,PAGE_CONTENTS  =    #{pageContents}  
+	           ,USE_YN         =    #{useYn}         
+	           ,MDATE          =    now()           
+	           ,MNAME          =    #{mname}         
+	     WHERE PAGE_ID = #{pageId}  
+	</update>
+	
+	<update id="updatePageMngUseYn">
+		UPDATE TB_PAGEMNG
+			SET USE_YN = #{useYn}
+			   ,MDATE  = NOW()
+			   ,MNAME  = #{mname}
+		WHERE PAGE_ID = #{pageId}  
+	</update>
+	
+	<delete id="deletePageMng">
+		DELETE FROM TB_PAGEMNG
+		WHERE PAGE_ID = #{pageId}  
+	</delete>
+</mapper>

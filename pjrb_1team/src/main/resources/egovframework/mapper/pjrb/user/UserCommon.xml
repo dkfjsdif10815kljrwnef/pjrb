@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="userMainDAO">
+
+	<select id="selectMain_1depthMenuList" resultType="egovMap">
+		SELECT *,
+				(
+		       		SELECT COUNT(*) 
+		       		FROM TB_MENUINFO B 
+		       		WHERE A.MENU_ID =  B.PARENT_MENU_ID 
+		       	) subMenuCnt	
+		FROM TB_MENUINFO A
+		WHERE 1=1 
+			AND A.MENU_USE = 'Y' 
+			AND A.MENU_DEPTH = 1
+		ORDER BY A.MENU_NUM
+	</select>
+	
+	<select id="selectMain_2depthMenuList" resultType="egovMap">
+		SELECT *,
+				(
+		       		SELECT COUNT(*) 
+		       		FROM TB_MENUINFO B 
+		       		WHERE A.MENU_ID =  B.PARENT_MENU_ID 
+		       	) subMenuCnt
+		FROM TB_MENUINFO A
+		WHERE 1=1 
+			AND A.MENU_USE = 'Y' 
+			AND A.MENU_DEPTH = 2
+		ORDER BY A.PARENT_MENU_ID, A.MENU_NUM
+	</select>
+	
+	<select id="selectMain_3depthMenuList" resultType="egovMap">
+		SELECT *,
+				(
+					SELECT PARENT_MENU_ID 
+					FROM TB_MENUINFO B 
+					WHERE A.PARENT_MENU_ID = B.MENU_ID
+				) pPMenuId
+		FROM TB_MENUINFO A
+		WHERE 1=1 
+			AND A.MENU_USE = 'Y' 
+			AND A.MENU_DEPTH = 3
+		ORDER BY A.PARENT_MENU_ID, A.MENU_NUM
+	</select>
+	
+	<select id="selectMainDepthMenuList" resultType="egovMap">
+		SELECT *,
+				(
+		       		SELECT COUNT(*) 
+		       		FROM TB_MENUINFO B 
+		       		WHERE A.MENU_ID =  B.PARENT_MENU_ID 
+		       	) subMenuCnt
+		FROM TB_MENUINFO A
+		WHERE 
+			 MENU_USE = 'Y' 
+			AND MENU_DEPTH = #{searchWrd}
+		ORDER BY PARENT_MENU_ID, MENU_NUM
+		
+	</select>
+	
+	<select id="selectContentDetail" resultType="egovMap">
+		
+		SELECT PAGE_ID
+		      ,PAGE_NM
+		      ,PAGE_CONTENTS
+		      ,USE_YN
+		      ,CDATE
+		      ,MDATE
+		      ,CNAME
+		      ,MNAME
+		      ,(
+			   		SELECT PARENT_MENU_ID 
+			   		FROM TB_MENUINFO 
+			   		WHERE MENU_URL LIKE concat('%', #{pageId}, '%') 
+			   			AND MENU_USE = 'Y' 
+			   		LIMIT 1
+			   	) PARENT_MENU_ID
+		FROM TB_PAGEMNG
+		WHERE PAGE_ID = #{pageId}
+	</select>
+	
+	<select id="selectMenuInfo"  parameterType="String" resultType="egovMap">
+		SELECT MENU_ID
+			  ,#{oriUrl} oriUrl
+			  ,MENU_TITLE
+			  ,MENU_URL
+			  ,IS_RMOUSE
+			  ,IS_BLANK
+			  ,MENU_DEPTH
+			  ,MENU_ID_PATH
+			  ,MENU_NAV
+			  ,PARENT_MENU_ID
+			  ,(SELECT USER_NM FROM TB_MEMBER_ADMIN WHERE EMPLYR_ID= B.EMPLYR_ID) MNG_NAME
+		  	  ,(SELECT PHONE FROM TB_MEMBER_ADMIN WHERE EMPLYR_ID= B.EMPLYR_ID) MNG_PHONE
+		  	  ,(SELECT DEPARTMENT FROM TB_MEMBER_ADMIN WHERE EMPLYR_ID= B.EMPLYR_ID) MNG_DEPARTMENT
+		FROM TB_MENUINFO B
+		WHERE MENU_URL LIKE CONCAT('%',#{oriUrl},'%')
+			AND MENU_USE = 'Y'  <!-- AND B.PARENT_MENU_ID != '0' -->
+		ORDER BY B.MENU_DEPTH*1  DESC
+		LIMIT 1
+		
+	</select>
+	<select id="selectTotalSearchCnt" resultType="egovMap">
+		SELECT
+			(
+				SELECT COUNT(DISTINCT(MENU_URL)) 
+				FROM TB_MENUINFO 
+				WHERE MENU_TITLE LIKE CONCAT ('%',#{searchWrd},'%') AND MENU_USE = 'Y'
+			) menuCnt,
+			(
+				SELECT COUNT(*) 
+				FROM COMTNBBS 
+				WHERE USE_AT = 'Y' AND
+				 (
+					  NTT_ID IN (
+					  				SELECT NTT_ID FROM TB_BBSADDFIELD WHERE SEQ = '1' AND CN  LIKE CONCAT ('%',#{searchWrd},'%')
+					  			)  OR
+			    	  NTT_CN LIKE CONCAT ('%',#{searchWrd},'%')
+		    	  )
+			) bbsCnt,
+			(
+				SELECT 
+				COUNT(*) 
+				FROM TB_PAGEMNG 
+				WHERE USE_YN = 'Y' AND
+					  (
+					  	PAGE_NM LIKE CONCAT ('%',#{searchWrd},'%') OR 
+					  	PAGE_CONTENTS LIKE CONCAT ('%',#{searchWrd},'%')
+					   )
+			) contCnt
+		FROM DUAL
+	</select>
+	
+	<select id="selectTotalSearchMenuList" resultType="egovMap">
+		SELECT MENU_URL
+			  ,MENU_DEPTH
+			  ,MENU_NAV
+		FROM TB_MENUINFO A
+		WHERE MENU_TITLE LIKE CONCAT ('%',#{searchWrd},'%') AND MENU_USE = 'Y'
+		GROUP BY MENU_URL
+		LIMIT #{recordCountPerPage} OFFSET #{firstIndex}	
+	</select>
+	
+	<select id="selectTotalSearchMenuListCnt" resultType="int">
+		SELECT COUNT(DISTINCT(MENU_URL)) 
+		FROM TB_MENUINFO A
+		WHERE MENU_TITLE LIKE CONCAT ('%',#{searchWrd},'%') AND MENU_USE = 'Y'
+	</select>
+	
+	<select id="selectTotalSearchBbsList" resultType="egovMap">
+		SELECT BBS_ID
+			  ,NTT_ID
+			  ,(SELECT CN FROM TB_BBSADDFIELD WHERE BBS_ID = A.BBS_ID AND NTT_ID = A.NTT_ID AND SEQ = '1') title
+			  ,NTT_CN
+			  ,DATE_FORMAT(FRST_REGIST_PNTTM,'%Y-%m-%d') regDate
+			  ,(SELECT MENU_NAV FROM TB_MENUINFO WHERE MENU_URL LIKE CONCAT ('%',BBS_ID,'%') AND MENU_USE = 'Y' ORDER BY MENU_DEPTH DESC LIMIT 1) MENU_NAV
+			  ,(SELECT MENU_URL FROM TB_MENUINFO WHERE MENU_URL LIKE CONCAT ('%',BBS_ID,'%') AND MENU_USE = 'Y' ORDER BY MENU_DEPTH DESC LIMIT 1) MENU_URL
+		FROM COMTNBBS A
+		WHERE USE_AT = 'Y' AND 
+			 (
+				  NTT_ID IN (
+				  				SELECT NTT_ID FROM TB_BBSADDFIELD WHERE SEQ = '1' AND CN  LIKE CONCAT ('%',#{searchWrd},'%')
+				  			)  OR
+		    	  NTT_CN LIKE CONCAT ('%',#{searchWrd},'%')
+	    	  )
+	   	HAVING MENU_URL IS NOT NULL
+	    ORDER BY FRST_REGIST_PNTTM DESC
+		LIMIT #{recordCountPerPage} OFFSET #{firstIndex}	
+	</select>
+	
+	<select id="selectTotalSearchBbsListCnt" resultType="int">
+		SELECT COUNT(*)
+		FROM COMTNBBS A
+		WHERE USE_AT = 'Y' AND
+			 (
+				  NTT_ID IN (
+				  				SELECT NTT_ID FROM TB_BBSADDFIELD WHERE SEQ = '1' AND CN  LIKE CONCAT ('%',#{searchWrd},'%')
+				  			)  OR
+		    	  NTT_CN LIKE CONCAT ('%',#{searchWrd},'%')
+	    	  )
+	   	AND (SELECT MENU_URL FROM TB_MENUINFO WHERE MENU_URL LIKE CONCAT ('%',BBS_ID,'%') AND MENU_USE = 'Y' ORDER BY MENU_DEPTH DESC LIMIT 1) IS NOT NULL
+	</select>
+	
+	<select id="selectTotalSearchContentsList" resultType="egovMap">
+	    SELECT PAGE_ID
+			  ,PAGE_NM
+			  ,PAGE_CONTENTS	  
+			  ,DATE_FORMAT(cdate,'%Y-%m-%d') regDate
+			  ,(SELECT MENU_NAV FROM TB_MENUINFO WHERE MENU_URL LIKE CONCAT ('%',PAGE_ID,'%') AND MENU_USE = 'Y' ORDER BY MENU_DEPTH DESC LIMIT 1) MENU_NAV
+			  ,(SELECT MENU_URL FROM TB_MENUINFO WHERE MENU_URL LIKE CONCAT ('%',PAGE_ID,'%') AND MENU_USE = 'Y' ORDER BY MENU_DEPTH DESC LIMIT 1) MENU_URL
+		FROM TB_PAGEMNG 
+		WHERE use_yn = 'Y' AND
+		( 
+			PAGE_CONTENTS LIKE CONCAT ('%',#{searchWrd},'%') OR 
+			PAGE_NM LIKE CONCAT ('%',#{searchWrd},'%')
+		)
+		HAVING MENU_URL IS NOT NULL
+	    ORDER BY CDATE DESC
+	    LIMIT #{recordCountPerPage} OFFSET #{firstIndex}	
+	</select>
+	
+	<select id="selectTotalSearchContentsListCnt" resultType="int">
+	    SELECT COUNT(*)
+		FROM TB_PAGEMNG 
+		WHERE USE_YN = 'Y' AND
+		( 
+			PAGE_CONTENTS LIKE CONCAT ('%',#{searchWrd},'%') OR 
+			PAGE_NM LIKE CONCAT ('%',#{searchWrd},'%')
+		)
+		AND (SELECT MENU_URL FROM TB_MENUINFO WHERE MENU_URL LIKE CONCAT ('%',PAGE_ID,'%') AND MENU_USE = 'Y' ORDER BY MENU_DEPTH DESC LIMIT 1) IS NOT NULL
+	</select>
+	
+	<select id="selectSubMenuList" resultType="egovMap">
+		SELECT *
+		FROM TB_MENUINFO
+		WHERE PARENT_MENU_ID = #{searchWrd}
+		AND MENU_USE = 'Y'
+		ORDER BY MENU_NUM
+	</select>
+	
+	<select id="selectSubMenu2Depth" resultType="egovMap">
+		SELECT *   
+ 		FROM TB_MENUINFO    
+ 		WHERE (
+	 			MENU_ID_PATH LIKE CONCAT('%',#{searchWrd},'%')  OR 
+				MENU_ID_PATH LIKE CONCAT('%',
+												(
+													SELECT PARENT_MENU_ID 
+													FROM TB_MENUINFO B 
+													WHERE MENU_ID = #{searchWrd} AND PARENT_MENU_ID != '0'
+												)
+											,'%')
+			)  AND MENU_DEPTH = '2'  
+	</select>
+	
+	<select id="selectMainPopupList" resultType="egovMap"> 
+		SELECT * 
+		FROM TB_POPUP 
+		WHERE STATUS = 'Y' 
+		AND
+	   	 		(
+	   	 			(
+	   	 				DATE_FORMAT(CONCAT(START_DATE,' ',START_TIME) , '%Y%m%d%H')  <![CDATA[ <= ]]>  DATE_FORMAT(NOW() , '%Y%m%d%H' )
+	   	 			)
+	   	 			
+	   	 			AND 
+	   	 			 
+	   	 			(
+	   	 				DATE_FORMAT(NOW() , '%Y%m%d%H' )  <![CDATA[ <= ]]>  DATE_FORMAT(CONCAT(END_DATE,' ',END_TIME), '%Y%m%d%H')
+	   	 			)
+	   	 		
+	   	 		)
+		
+	</select>
+	
+	<select id="selectSnsList" resultType="egovMap">
+		SELECT
+		SNS_TYPE
+		,SNS_TITLE
+		,SNS_IMG
+		,SNS_LINK
+		FROM TB_SNS
+		WHERE sns_type = #{snsType}
+	</select>
+	
+	<insert id="snsInsert">
+		INSERT INTO TB_SNS (
+			sns_type, sns_title, sns_img, sns_link, reg_date
+		) VALUES (
+			#{snsType}, #{snsTitle}, #{snsImg}, #{snsLink}, now()
+		)
+	</insert>
+	
+	<delete id="snsDelete">
+		DELETE FROM TB_SNS WHERE sns_Type = #{snsType}
+	</delete>
+	
+	<insert id="snsTokenInsert">
+		INSERT INTO TB_SNS_TOKEN (
+			TOKEN,ISSUE_DATE,SNS_TYPE
+		) VALUES (
+			#{token}, now(), #{snsType}
+		)
+	</insert>
+	
+	<select id="snsTokenSelect" resultType="egovMap">
+		select * from TB_SNS_token 
+		WHERE SNS_TYPE = #{snsType}
+		ORDER BY ISSUE_DATE DESC
+		LIMIT 1
+	</select>
+</mapper>

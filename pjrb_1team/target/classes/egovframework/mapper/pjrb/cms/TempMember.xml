@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cmsTempMemberDAO">
+	<select id="memberList" resultType="egovMap">
+		<![CDATA[
+			SELECT  *
+			FROM tb_member 
+			WHERE 1=1
+			and grade != '0'
+		]]>
+		<if test='searchType != null and searchType != ""'>
+			AND type = #{searchType}
+		</if>
+		<if test='searchCnd != null and searchCnd != "" and searchCnd == "userNm"'>
+			AND (USER_NM LIKE CONCAT('%',#{searchWrd} ,'%') OR EMPLYR_ID LIKE CONCAT('%',#{searchWrd} ,'%')) 
+		</if>
+		<if test='searchCnd != null and searchCnd != "" and searchCnd == "userNm"'>
+			AND USER_NM LIKE CONCAT('%',#{searchWrd} ,'%')  
+		</if>
+		<if test='searchCnd != null and searchCnd != "" and searchCnd == "userNm"'>
+			AND EMPLYR_ID LIKE CONCAT('%',#{searchWrd} ,'%')
+		</if>
+	</select>
+	
+			
+	<select id="memberListCnt" resultType="int">
+   			select count(*)
+			from tb_member 
+			where 1=1
+			and grade != '0'
+			<if test='searchType != null and searchType != ""'>
+				AND type = #{searchType}
+			</if>
+			<if test='searchCnd != null and searchCnd != "" and searchCnd == "all"'>
+				<![CDATA[AND	(USER_NM LIKE CONCAT('%',#{searchWrd} ,'%') OR EMPLYR_ID LIKE CONCAT('%',#{searchWrd} ,'%'))	]]>
+			</if>
+			<if test='searchCnd != null and searchCnd != "" and searchCnd == "userNm"'>
+				<![CDATA[AND	USER_NM LIKE CONCAT('%',#{searchWrd} ,'%')	]]>
+			</if>
+			<if test='searchCnd != null and searchCnd != "" and searchCnd == "emplyrId"'>
+				<![CDATA[AND	EMPLYR_ID LIKE CONCAT('%',#{searchWrd} ,'%')	]]>
+			</if>
+	</select>
+	
+	
+	
+</mapper>

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="loginDAO">
+
+	
+	<resultMap id="cmsLogin" type="egovframework.com.cmm.LoginVO">
+		<result property="emplyrId" column="emplyr_id" />
+		<result property="userNm" column="user_nm" />
+		<result property="password" column="password" />
+		<result property="phone" column="phone" />
+		<result property="email" column="email" />
+		
+		<result property="status" column="status" />
+		<result property="sessionGrade" column="sessionGrade" />
+		<result property="sessionGradeNm" column="sessionGradeNm" />
+		<result property="auth" column="auth" />
+		<result property="changeDay" column="changeDay"/>
+		<result property="lastLoginDay" column="lastLoginDay" />
+		<result property="wrongCnt" column="wrongCnt" />
+		<result property="type" column="type" />
+	</resultMap>
+	
+   	<select id="actionLogin" resultMap="cmsLogin">
+			SELECT  a.emplyr_id
+			     , a.user_nm
+			     , a.password
+			     , a.phone
+			     , a.email
+			     
+			     , a.status
+			     , a.grade as sessionGrade
+			     , b.grade_nm as sessionGradeNm
+			     , b.auth as auth
+				 , DATEDIFF(now(), a.change_date) as changeDay
+				 , DATEDIFF(now(), a.last_login_date) as lastLoginDay
+				 
+				 , a.wrong_cnt as wrongCnt
+				 , a.type
+			FROM tb_member a
+			LEFT OUTER JOIN tb_grade b ON a.grade = b.grade
+			WHERE a.emplyr_id = #{emplyrId}
+			and a.password = #{password}
+	</select>
+	
+	
+	 	<select id="actionSnsLogin" resultMap="cmsLogin">
+			SELECT  a.emplyr_id
+			     , a.user_nm
+			     , a.password
+			     , a.phone
+			     , a.email
+			     
+			     , a.status
+			     , a.grade as sessionGrade
+			     , b.grade_nm as sessionGradeNm
+			     , b.auth as auth
+				 , DATEDIFF(now(), a.change_date) as changeDay
+				 , DATEDIFF(now(), a.last_login_date) as lastLoginDay
+				 
+				 , a.wrong_cnt as wrongCnt
+				 , a.type
+
+			FROM tb_member a
+			LEFT OUTER JOIN tb_grade b ON a.grade = b.grade
+			WHERE a.emplyr_id = #{emplyrId}
+			AND A.STATUS = 'Y'
+			AND A.deleteAt = 'N'
+	</select>
+</mapper>

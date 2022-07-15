@@ -1,0 +1,863 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cmsBoardDAO">
+
+	<resultMap id="bbsConfFieldSelectSearch" type="pjrb.cms.bbs.service.CmsBbsVO">
+		<result property="seq" column="SEQ" ></result>
+		<result property="bbsId" column="BBS_ID" ></result>
+		<result property="fieldNm" column="FIELD_NM" ></result>
+		<collection property="groupByList" column="{bbsId = BBS_ID , seq = SEQ}" select="selectBbsSelectBoxSearchGroupBy" ></collection>
+	</resultMap>
+	
+	<resultMap id="bbsConfFieldSelectSearchGroupBy" type="pjrb.cms.bbs.service.CmsBbsVO">
+		<result property="seq" column="SEQ" ></result>
+		<result property="addFieldCn" column="ADD_FIELD_CN" ></result>
+	</resultMap>
+	
+   	<select id="mngList" resultType="egovMap">
+			SELECT *
+			FROM TB_BBSMASTER 
+			WHERE 1=1 AND USE_YN = 'Y'
+			<if test='searchCnd != null and searchCnd != ""'>
+				AND BBS_TP = #{searchCnd}
+			</if>
+			<if test='useYn != null and useYn != ""'>
+				AND USE_YN = #{useYn}
+			</if>
+			<if test='searchWrd != null and searchWrd != ""'>
+				AND BBS_NM LIKE CONCAT('%',#{searchWrd},'%')
+			</if>
+			ORDER BY REG_DATE DESC
+			<if test='recordCountPerPage > -1'>
+				<![CDATA[	LIMIT #{recordCountPerPage} OFFSET #{firstIndex}	]]>
+			</if>
+	</select>
+		
+	<select id="mngListCnt" resultType="int">
+   			SELECT COUNT(*)
+			FROM TB_BBSMASTER 
+			WHERE 1=1 AND USE_YN = 'Y'
+			<if test='searchCnd != null and searchCnd != ""'>
+				AND BBS_TP = #{searchCnd}
+			</if>
+			<if test='useYn != null and useYn != ""'>
+				AND USE_YN = #{useYn}
+			</if>
+			<if test='searchWrd != null and searchWrd != ""'>
+				AND BBS_NM LIKE CONCAT('%',#{searchWrd},'%')
+			</if>
+	</select>
+	
+	<select id="mngView" resultType="egovMap">
+			SELECT *
+			FROM TB_BBSMASTER 
+			WHERE 1=1
+			AND BBS_ID = #{bbsId}
+	</select>
+	
+	<select id="bbsList" resultType="egovMap">
+		SELECT NTT_NO
+		      ,BBS_ID
+		      ,NTT_SJ
+		      ,NTT_CN
+		      ,REPLY_CN
+		      ,ATCH_FILE_ID
+		      ,REG_DATE
+		      ,MOD_DATE
+		      ,REG_ID
+		      ,MOD_ID
+		      ,IFNULL(RDCNT,0) rdcnt
+		      ,USE_YN
+		      ,NTC_YN
+		      ,(SELECT BBS_NM FROM TB_BBSMASTER WHERE A.BBS_ID = BBS_ID) bbsNm
+		      ,(SELECT BBS_TP FROM TB_BBSMASTER WHERE A.BBS_ID = BBS_ID) bbsTp
+		FROM TB_BBS A
+		WHERE BBS_ID = #{bbsId}
+		AND USE_YN = 'Y'	
+		
+		<choose>
+			<when test='searchCnd != null and searchCnd != "" and searchCnd == "all"'>
+				<![CDATA[AND	(
+									A.NTT_CN LIKE CONCAT ('%', #{searchWrd},'%') or 
+									A.NTT_NO IN (
+												SELECT NTT_NO 
+												FROM TB_BBSADDFIELD 
+												WHERE BBS_ID = a.BBS_ID AND 
+													  ADD_FIELD_CN LIKE CONCAT ('%', #{searchWrd},'%')
+											)
+									
+								)	
+					]]>
+			</when>
+			<when test='searchCnd != null and searchCnd != "" and searchCnd == "nttCn"'>
+				<![CDATA[AND	A.NTT_CN LIKE CONCAT ('%', #{searchWrd},'%') 		]]>
+				<!-- <![CDATA[	REGEXP_REPLACE(a.ntt_cn, '<[^>]+>','') LIKE CONCAT ('%', #searchWrd#,'%') 		]]> mysql 8.0 이상-->
+			</when>
+			<otherwise>
+				<if test='searchCnd != null and searchWrd != null'>
+					AND A.NTT_NO IN (
+												SELECT NTT_NO 
+												FROM TB_BBSADDFIELD 
+												WHERE BBS_ID = a.BBS_ID AND 
+													  SEQ = #{searchCnd} AND 
+													  ADD_FIELD_CN LIKE CONCAT ('%', #{searchWrd},'%')
+											)
+				</if>
+			</otherwise>
+		</choose>	
+		<if test='searchAddDt1FieldList != null and searchAddDt1FieldList.size > 0'>
+			<foreach collection="searchAddDt1FieldList" item="addDt1">
+				<if test='addDt1 != null and addDt1.searchCnd != "" and addDt1.searchCnd == "1"'>
+					<![CDATA[AND A.NTT_NO IN (
+										SELECT NTT_NO 
+										FROM TB_BBSADDFIELD 
+										WHERE BBS_ID = A.BBS_ID AND SEQ = #{addDt1.seq} AND
+											 DATE_FORMAT(NOW(),'%Y%m%d') <= DATE_FORMAT(ADD_FIELD_CN,'%Y%m%d') 
+									)
+						]]>
+				</if>
+				<if test='addDt1 != null and addDt1.searchCnd != "" and addDt1.searchCnd == "2"'>
+					<![CDATA[AND A.NTT_NO IN (
+										SELECT NTT_NO 
+										FROM TB_BBSADDFIELD 
+										WHERE BBS_ID = A.BBS_ID AND SEQ = #{addDt1.seq} AND
+											  DATE_FORMAT(NOW(),'%Y%m%d') > DATE_FORMAT(ADD_FIELD_CN,'%Y%m%d') 
+									)
+						]]>
+				</if>
+			</foreach>
+		</if>
+		
+		<if test='searchAddDt2FieldList != null and searchAddDt2FieldList.size > 0'>
+			<foreach collection="searchAddDt2FieldList" item="addDt2">
+				<if test='addDt2 != null and addDt2.searchCnd != "" and addDt2.searchCnd == "1"'>
+					<![CDATA[AND A.NTT_NO IN (
+										SELECT NTT_NO 
+										FROM TB_BBSADDFIELD 
+										WHERE BBS_ID = A.BBS_ID AND SEQ = #{addDt2.seq} AND
+										DATE_FORMAT(NOW(),'%Y%m%d') >= DATE_FORMAT(substring(ADD_FIELD_CN,1,10),'%Y%m%d') AND
+										DATE_FORMAT(NOW(),'%Y%m%d') <= DATE_FORMAT(substring(ADD_FIELD_CN,12,20),'%Y%m%d') 
+									)
+						]]>
+				</if>
+				<if test='addDt2 != null and addDt2.searchCnd != "" and addDt2.searchCnd == "2"'>
+					<![CDATA[AND A.NTT_NO IN (
+										SELECT NTT_NO 
+										FROM TB_BBSADDFIELD 
+										WHERE BBS_ID = A.BBS_ID AND SEQ = #{addDt2.seq} AND
+										DATE_FORMAT(NOW(),'%Y%m%d') > DATE_FORMAT(substring(ADD_FIELD_CN,12,20),'%Y%m%d') 
+									)
+						]]>
+				</if>
+				<if test='addDt2 != null and addDt2.searchCnd != "" and addDt2.searchCnd == "3"'>
+					<![CDATA[AND A.NTT_NO IN (
+										SELECT NTT_NO 
+										FROM TB_BBSADDFIELD 
+										WHERE BBS_ID = A.BBS_ID AND SEQ = #{addDt2.seq} AND
+										DATE_FORMAT(NOW(),'%Y%m%d') < DATE_FORMAT(substring(ADD_FIELD_CN,1,10),'%Y%m%d')
+									)
+						]]>
+				</if>
+			</foreach>
+		</if>
+		<if test='searchSelectBoxList != null and searchSelectBoxList.size > 0'>
+			<foreach collection="searchSelectBoxList" item="sb">
+				<if test='sb != null and sb.searchCnd != ""'>
+					AND A.NTT_NO IN (
+										SELECT NTT_NO 
+										FROM TB_BBSADDFIELD 
+										WHERE BBS_ID = A.BBS_ID AND SEQ = #{sb.seq} AND
+										ADD_FIELD_CN = #{sb.searchCnd}
+									)
+				</if>
+			</foreach>
+		</if>
+					
+		ORDER BY NTC_YN desc , REG_DATE DESC
+						
+		<if test='recordCountPerPage > -1'>
+			<![CDATA[	LIMIT #{recordCountPerPage} OFFSET #{firstIndex}	]]>
+		</if>
+	</select>	
+	
+	<select id="bbsListCnt" resultType="java.lang.Integer">
+		SELECT COUNT(*)
+		FROM TB_BBS A
+		WHERE BBS_ID = #{bbsId}
+		AND USE_YN = 'Y'	
+			
+		<choose>
+			<when test='searchCnd != null and searchCnd != "" and searchCnd == "all"'>
+				<![CDATA[AND	(
+									A.NTT_CN LIKE CONCAT ('%', #{searchWrd},'%') or 
+									A.NTT_NO IN (
+												SELECT NTT_NO 
+												FROM TB_BBSADDFIELD 
+												WHERE BBS_ID = a.BBS_ID AND 
+													  ADD_FIELD_CN LIKE CONCAT ('%', #{searchWrd},'%')
+											)
+									
+								)	
+					]]>
+			</when>
+			<when test='searchCnd != null and searchCnd != "" and searchCnd == "nttCn"'>
+				<![CDATA[AND	A.NTT_CN LIKE CONCAT ('%', #{searchWrd},'%') 		]]>
+				<!-- <![CDATA[	REGEXP_REPLACE(a.ntt_cn, '<[^>]+>','') LIKE CONCAT ('%', #searchWrd#,'%') 		]]> mysql 8.0 이상-->
+			</when>
+			<otherwise>
+				<if test='searchCnd != null and searchWrd != null'>
+					AND A.NTT_NO IN (
+												SELECT NTT_NO 
+												FROM TB_BBSADDFIELD 
+												WHERE BBS_ID = a.BBS_ID AND 
+													  SEQ = #{searchCnd} AND 
+													  ADD_FIELD_CN LIKE CONCAT ('%', #{searchWrd},'%')
+											)
+				</if>
+			</otherwise>
+		</choose>
+		
+		<if test='searchAddDt1FieldList != null and searchAddDt1FieldList.size > 0'>
+			<foreach collection="searchAddDt1FieldList" item="addDt1">
+				<if test='addDt1 != null and addDt1.searchCnd != "" and addDt1.searchCnd == "1"'>
+					<![CDATA[AND A.NTT_NO IN (
+										SELECT NTT_NO 
+										FROM TB_BBSADDFIELD 
+										WHERE BBS_ID = A.BBS_ID AND SEQ = #{addDt1.seq} AND
+											 DATE_FORMAT(NOW(),'%Y%m%d') <= DATE_FORMAT(ADD_FIELD_CN,'%Y%m%d') 
+									)
+						]]>
+				</if>
+				<if test='addDt1 != null and addDt1.searchCnd != "" and addDt1.searchCnd == "2"'>
+					<![CDATA[AND A.NTT_NO IN (
+										SELECT NTT_NO 
+										FROM TB_BBSADDFIELD 
+										WHERE BBS_ID = A.BBS_ID AND SEQ = #{addDt1.seq} AND
+											  DATE_FORMAT(NOW(),'%Y%m%d') > DATE_FORMAT(ADD_FIELD_CN,'%Y%m%d') 
+									)
+						]]>
+				</if>
+			</foreach>
+		</if>
+		
+		<if test='searchAddDt2FieldList != null and searchAddDt2FieldList.size > 0'>
+			<foreach collection="searchAddDt2FieldList" item="addDt2">
+				<if test='addDt2 != null and addDt2.searchCnd != "" and addDt2.searchCnd == "1"'>
+					<![CDATA[AND A.NTT_NO IN (
+										SELECT NTT_NO 
+										FROM TB_BBSADDFIELD 
+										WHERE BBS_ID = A.BBS_ID AND SEQ = #{addDt2.seq} AND
+										DATE_FORMAT(NOW(),'%Y%m%d') >= DATE_FORMAT(substring(ADD_FIELD_CN,1,10),'%Y%m%d') AND
+										DATE_FORMAT(NOW(),'%Y%m%d') <= DATE_FORMAT(substring(ADD_FIELD_CN,12,20),'%Y%m%d') 
+									)
+						]]>
+				</if>
+				<if test='addDt2 != null and addDt2.searchCnd != "" and addDt2.searchCnd == "2"'>
+					<![CDATA[AND A.NTT_NO IN (
+										SELECT NTT_NO 
+										FROM TB_BBSADDFIELD 
+										WHERE BBS_ID = A.BBS_ID AND SEQ = #{addDt2.seq} AND
+										DATE_FORMAT(NOW(),'%Y%m%d') > DATE_FORMAT(substring(ADD_FIELD_CN,12,20),'%Y%m%d') 
+									)
+						]]>
+				</if>
+				<if test='addDt2 != null and addDt2.searchCnd != "" and addDt2.searchCnd == "3"'>
+					<![CDATA[AND A.NTT_NO IN (
+										SELECT NTT_NO 
+										FROM TB_BBSADDFIELD 
+										WHERE BBS_ID = A.BBS_ID AND SEQ = #{addDt2.seq} AND
+										DATE_FORMAT(NOW(),'%Y%m%d') < DATE_FORMAT(substring(ADD_FIELD_CN,1,10),'%Y%m%d')
+									)
+						]]>
+				</if>
+			</foreach>
+		</if>
+		<if test='searchSelectBoxList != null and searchSelectBoxList.size > 0'>
+			<foreach collection="searchSelectBoxList" item="sb">
+				<if test='sb != null and sb.searchCnd != ""'>
+					AND A.NTT_NO IN (
+										SELECT NTT_NO 
+										FROM TB_BBSADDFIELD 
+										WHERE BBS_ID = A.BBS_ID AND SEQ = #{sb.seq} AND
+										ADD_FIELD_CN = #{sb.searchCnd}
+									)
+				</if>
+			</foreach>
+		</if>
+				
+	</select>	
+	
+	<insert id="bbsInsert">
+		INSERT INTO TB_BBS
+			(
+				 NTT_NO
+				,BBS_ID      
+				,NTT_SJ      
+				,NTT_CN      
+				,REPLY_CN    
+				,ATCH_FILE_ID
+				,REG_DATE    
+				,REG_ID      
+				,USE_YN      
+				,NTC_YN      
+			)
+		values
+			(
+				#{nttNo}
+			   ,#{bbsId}
+			   ,#{nttSj}
+			   ,#{nttCn}
+			   ,#{replyCn}
+			   ,#{atchFileId}
+			   <choose>
+			   	<when test='regDate != null and regDate != ""'>
+			   		,#{regDate}
+			   	</when>
+			   	<otherwise>
+			   		,NOW()
+			   	</otherwise>
+			   </choose>
+			   ,#{regId}
+			   ,#{useYn}
+			   ,#{ntcYn}
+			)
+	</insert>
+	
+	<update id="bbsUpdate">
+		UPDATE TB_BBS
+		set  NTT_SJ        = #{nttSj}
+		    ,NTT_CN        = #{nttCn}
+		    ,REPLY_CN      = #{replyCn}
+		    ,ATCH_FILE_ID  = #{atchFileId}
+		    ,USE_YN        = #{useYn}
+		    ,NTC_YN        = #{ntcYn}
+		    ,MOD_DATE      = now()
+			,MOD_ID		   = #{modId}
+		WHERE BBS_ID = #{bbsId}
+			  AND NTT_NO = #{nttNo}
+ 	</update>
+ 	
+ 	<delete id="bbsDelete">
+ 		UPDATE TB_BBS
+ 		SET USE_YN = 'N'
+ 		WHERE BBS_ID = #{bbsId}
+		AND NTT_NO = #{nttNo}
+ 	</delete>
+ 	
+ 	<select id="bbsView" resultType="egovMap">
+		<![CDATA[
+			SELECT *
+			FROM
+				TB_BBS
+			WHERE BBS_ID = #{bbsId}
+			AND NTT_NO = #{nttNo}
+		]]>				
+	</select>	
+	
+	<update id="bbsUseAtUpdate">
+       <![CDATA[
+         UPDATE TB_BBS SET
+            USE_YN = #{useYn} 
+         WHERE BBS_ID = #{bbsId}
+         AND NTT_NO = #{nttNo}
+       ]]>
+    </update>
+    
+      
+    <insert id="insertBbsAddFieldConf">
+    	INSERT INTO TB_BBSADDFIELDCONF
+    		(
+    			BBS_ID
+    		   ,SEQ
+    		   ,FIELD_NM
+    		   ,FIELD_DT_YN
+    		   ,USE_YN
+    		   ,FIELD_TERM_YN
+    		   ,FIELD_STATUS_YN
+    		   ,FIELD_STATUS_SEQ
+    		   ,FIELD_SELECT_SEARCH_YN
+    		)
+    	VALUES
+    		(
+    			#{bbsId}
+    		   ,#{seq}
+    		   ,#{fieldNm}
+    		   ,#{fieldDtYn}
+    		   ,#{useYn}
+    		   ,#{fieldTermYn}
+    		   ,#{fieldStatusYn}
+    		   ,#{fieldStatusSeq}
+    		   ,#{fieldSelectSearchYn}
+    		)
+    </insert>
+
+	<delete id="deleteBbsAddFieldConf">
+		DELETE FROM TB_BBSADDFIELDCONF
+		WHERE BBS_ID = #{bbsId}
+	</delete>
+	
+	<select id="selectBbsAddFieldConfList" resultType="egovMap">
+		SELECT  BBS_ID         
+		       ,SEQ            
+		       ,FIELD_NM    
+		       ,FIELD_DT_YN     
+		       ,USE_YN
+		       ,FIELD_TERM_YN
+		       ,FIELD_STATUS_YN
+		       ,FIELD_STATUS_SEQ
+		       ,FIELD_SELECT_SEARCH_YN
+		FROM  TB_BBSADDFIELDCONF
+		WHERE BBS_ID = #{bbsId}
+		ORDER BY SEQ*1
+	</select>
+	   
+	<select id="selectBbsAddFieldList" resultType="egovMap">
+		SELECT A.BBS_ID
+    	      ,A.SEQ
+    	      ,B.ADD_FIELD_CN
+    	      ,A.FIELD_NM
+    	      ,A.USE_YN
+    	      ,A.FIELD_DT_YN
+    	      ,B.NTT_NO
+    	      ,A.FIELD_STATUS_YN
+    	      ,A.FIELD_TERM_YN
+    	      ,A.FIELD_STATUS_SEQ
+    	      ,A.FIELD_SELECT_SEARCH_YN
+    	FROM TB_BBSADDFIELDCONF A LEFT JOIN TB_BBSADDFIELD B 
+    			ON A.BBS_ID = B.BBS_ID AND A.SEQ = B.SEQ AND B.NTT_NO = #{nttNo}
+    	WHERE A.BBS_ID = #{bbsId}
+	
+	</select>
+	     
+	<select id="selectBbsAddFieldList_forList" resultType="egovMap">
+		<!-- <![CDATA[
+		SELECT GROUP_CONCAT(T.addFieldCn SEPARATOR '||') addFieldCn , T.NTT_NO
+		FROM 
+		(	
+			SELECT IF(B.ADD_FIELD_CN = '' , ' ', B.ADD_FIELD_CN) addFieldCn , B.NTT_NO
+			FROM TB_BBSTABLEHEAD   A LEFT JOIN TB_BBSADDFIELD  B ON A.BBS_ID = B.BBS_ID AND A.SEQ = B.SEQ 
+				 LEFT JOIN TB_BBS C ON A.BBS_ID = B.BBS_ID AND B.NTT_NO = C.NTT_NO
+			WHERE A.BBS_ID = #{bbsId} AND C.USE_YN = 'Y'
+			ORDER BY B.NTT_NO*1 ,A.SORT*1
+		) T
+		GROUP BY T.NTT_NO
+		]]> -->
+		SELECT IF(B.ADD_FIELD_CN = '' , ' ', B.ADD_FIELD_CN) addFieldCn , 
+		       B.NTT_NO , 
+		       	(
+		       		SELECT FIELD_STATUS_SEQ 
+		       		FROM TB_BBSADDFIELDCONF 
+		       		WHERE BBS_ID = A.BBS_ID AND SEQ = A.SEQ
+		       	) fieldStatusSeq,
+		       	(
+		       		SELECT FIELD_SELECT_SEARCH_YN 
+		       		FROM TB_BBSADDFIELDCONF 
+		       		WHERE BBS_ID = A.BBS_ID AND SEQ = A.SEQ
+		       	) fieldSelectSearchYn,
+		       	(
+		       		SELECT IF(FIELD_DT_YN = 'Y' OR FIELD_TERM_YN = 'Y' , 'Y','N')
+		       		FROM TB_BBSADDFIELDCONF 
+		       		WHERE BBS_ID = A.BBS_ID AND SEQ = A.SEQ
+		       	) fieldDtYn
+		FROM TB_BBSTABLEHEAD   A LEFT JOIN TB_BBSADDFIELD  B ON A.BBS_ID = B.BBS_ID AND A.SEQ = B.SEQ 
+			 LEFT JOIN TB_BBS C ON A.BBS_ID = B.BBS_ID AND B.NTT_NO = C.NTT_NO
+		WHERE A.BBS_ID = #{bbsId} AND C.USE_YN = 'Y'
+		ORDER BY B.NTT_NO*1 ,A.SORT*1
+	</select>     
+	
+    <insert id="insertBbsAddField">
+    	INSERT INTO TB_BBSADDFIELD
+    		(
+    			BBS_ID
+    		   ,SEQ
+    		   ,ADD_FIELD_CN
+    		   ,NTT_NO
+    		)
+    	VALUES
+    		(
+    			#{bbsId}
+    		   ,#{seq}
+    		   ,#{addFieldCn}
+    		   ,#{nttNo}
+    		)
+    </insert>
+
+	<delete id="deleteBbsAddField">
+		DELETE FROM TB_BBSADDFIELD
+		WHERE BBS_ID = #{bbsId} AND NTT_NO = #{nttNo}
+	</delete>
+	
+	<insert id="insertBbsTableHead">
+		INSERT INTO TB_BBSTABLEHEAD
+			(
+				BBS_ID
+			   ,SEQ
+			   ,SORT
+			)
+		VALUES
+			(
+				#{bbsId}
+			   ,#{seq}
+			   ,#{sort}
+			)
+			
+	</insert>
+	
+	<delete id="deleteBbsTableHead">
+		DELETE FROM TB_BBSTABLEHEAD
+		WHERE BBS_ID = #{bbsId}
+	</delete>
+	
+	<select id="selectBbsTableHeadList" resultType="egovMap">
+		SELECT   (SELECT FIELD_NM FROM TB_BBSADDFIELDCONF WHERE A.BBS_ID = BBS_ID AND SEQ = A.SEQ) FIELD_NM
+				,(SELECT FIELD_STATUS_YN   FROM TB_BBSADDFIELDCONF WHERE A.BBS_ID = BBS_ID AND SEQ = A.SEQ) FIELD_STATUS_YN
+				,(
+						SELECT if(FIELD_DT_YN = 'Y' or FIELD_TERM_YN = 'Y' ,'Y','N')
+						FROM TB_BBSADDFIELDCONF  
+						WHERE A.BBS_ID = BBS_ID AND A.SEQ = SEQ
+				)FIELD_DT_YN
+				,(
+					SELECT IF(
+								B.FIELD_STATUS_YN = 'Y',
+								(
+										SELECT CASE
+										WHEN FIELD_DT_YN = 'Y'
+										THEN '1'
+										WHEN FIELD_TERM_YN = 'Y'
+										THEN '2'
+										ELSE
+											''END
+											
+								 FROM TB_BBSADDFIELDCONF  
+								 WHERE B.BBS_ID = BBS_ID AND B.FIELD_STATUS_SEQ = SEQ
+								),'' 
+							)  
+					FROM TB_BBSADDFIELDCONF B 
+					WHERE A.BBS_ID = B.BBS_ID AND B.SEQ = A.SEQ
+				) FIELD_DT_TP
+	      		,A.SEQ
+	      		,A.SORT
+		FROM  TB_BBSTABLEHEAD A
+		WHERE  A.BBS_ID = #{bbsId}
+		ORDER BY A.SORT*1
+	</select>
+	
+	
+	<update id="updateBbsRdcnt">
+ 		UPDATE TB_BBS
+ 		SET RDCNT = (
+						SELECT RDCNT
+ 						FROM 
+		 				(
+							SELECT IFNULL(MAX(RDCNT),0)+1 AS RDCNT 
+							FROM TB_BBS 
+							WHERE BBS_ID = #{bbsId}
+							AND NTT_NO = #{nttNo} 
+						) A
+					)
+					
+		WHERE BBS_ID = #{bbsId}
+		AND NTT_NO = #{nttNo} 
+ 		
+ 	</update>
+ 	
+ 	<insert id="insertBbsMaster">
+ 		INSERT INTO TB_BBSMASTER
+ 			(
+ 				BBS_ID
+ 			   ,BBS_NM
+ 			   ,BBS_TP
+ 			   ,CMD_YN
+ 			   ,NOTICE_YN
+ 			   ,ATCH_FILE_NUM
+ 			   ,ATCH_FILE_SIZE
+ 			   ,REG_DATE
+ 			   ,REG_ID
+ 			   ,USE_YN
+ 			)
+ 		VALUES
+ 			(
+ 				#{bbsId}
+ 			   ,#{bbsNm}
+ 			   ,#{bbsTp}
+ 			   ,#{cmdYn}
+ 			   ,#{noticeYn}
+ 			   ,#{atchFileNum}
+ 			   ,#{atchFileSize}
+ 			   ,NOW()
+ 			   ,#{regId}
+ 			   ,#{useYn}
+ 			)
+ 	</insert>
+ 	
+ 	<update id="updateBbsMaster">
+ 		UPDATE TB_BBSMASTER
+ 		SET     BBS_NM         	=    #{bbsNm}        
+ 		       ,BBS_TP          =    #{bbsTp}        
+ 		       ,CMD_YN          =    #{cmdYn}        
+ 		       ,NOTICE_YN       =    #{noticeYn}     
+ 		       ,ATCH_FILE_NUM   =    #{atchFileNum}  
+ 		       ,ATCH_FILE_SIZE  =    #{atchFileSize} 
+ 		       ,MOD_DATE        =    NOW()          
+ 		       ,MOD_ID          =    #{modId}
+ 		       ,USE_YN			=    #{useYn}
+ 		WHERE BBS_ID = #{bbsId}        		
+ 	</update>
+ 	
+ 		
+	<update id="mngDelete">
+			UPDATE TB_BBSMASTER
+			SET USE_YN = 'N'
+			WHERE BBS_ID = #{bbsId}
+	</update>
+	
+	<select id="cmsBoardDAO.selectBbsSelectBoxSearch" resultMap="bbsConfFieldSelectSearch">
+		SELECT SEQ 
+		      ,BBS_ID
+		      ,FIELD_NM
+		FROM TB_BBSADDFIELDCONF 
+		WHERE BBS_ID = #{bbsId} AND USE_YN = 'Y' AND FIELD_SELECT_SEARCH_YN = 'Y'
+	</select>
+	
+	<select id="selectBbsSelectBoxSearchGroupBy" resultMap="bbsConfFieldSelectSearchGroupBy">
+		SELECT SEQ,ADD_FIELD_CN 
+		FROM TB_BBSADDFIELD A LEFT JOIN TB_BBS B
+			 ON A.BBS_ID = B.BBS_ID AND A.NTT_NO = B.NTT_NO
+		WHERE A.BBS_ID = #{bbsId} AND SEQ =  #{seq} AND B.USE_YN = 'Y'
+		GROUP BY ADD_FIELD_CN
+	</select>
+	
+	<select id="bbsContentsList" resultType="egovMap">
+		SELECT NTT_NO
+		      ,BBS_ID
+		      ,NTT_SJ
+		      ,NTT_CN
+		      ,THUMB_ATCH_FILE_ID
+		      ,ATCH_FILE_ID
+		      ,REG_DATE
+		      ,MOD_DATE
+		      ,REG_ID
+		      ,MOD_ID
+		      ,IFNULL(RDCNT,0) rdcnt
+		      ,USE_YN
+		      ,NTC_YN
+		      ,(SELECT BBS_NM FROM TB_BBSMASTER WHERE A.BBS_ID = BBS_ID) bbsNm
+		      ,(SELECT BBS_TP FROM TB_BBSMASTER WHERE A.BBS_ID = BBS_ID) bbsTp
+		FROM TB_BBS_CONTENTS A
+		WHERE BBS_ID = #{bbsId}
+		AND USE_YN = 'Y'	
+		<choose>
+			<when test='searchCnd != null and searchCnd != "" and searchCnd == "all"'>
+				<![CDATA[AND	(
+									A.NTT_CN LIKE CONCAT ('%', #{searchWrd},'%') or 
+									A.NTT_SJ LIKE CONCAT ('%', #{searchWrd},'%') 
+									
+								)	
+					]]>
+			</when>
+			<when test='searchCnd != null and searchCnd != "" and searchCnd == "nttCn"'>
+				<![CDATA[AND	A.NTT_CN LIKE CONCAT ('%', #{searchWrd},'%') 		]]>
+			</when>
+			<when test='searchCnd != null and searchCnd != "" and searchCnd == "nttSj"'>
+				<![CDATA[AND	A.NTT_SJ LIKE CONCAT ('%', #{searchWrd},'%') 		]]>
+			</when>
+		</choose>			
+		ORDER BY NTC_YN desc , REG_DATE DESC
+		<if test='recordCountPerPage > -1'>
+			<![CDATA[	LIMIT #{recordCountPerPage} OFFSET #{firstIndex}	]]>
+		</if>
+	</select>	
+	
+	<select id="bbsContentsListCnt" resultType="java.lang.Integer">
+		SELECT COUNT(*)
+		FROM TB_BBS_CONTENTS A
+		WHERE BBS_ID = #{bbsId}
+		AND USE_YN = 'Y'	
+		<choose>
+			<when test='searchCnd != null and searchCnd != "" and searchCnd == "all"'>
+				<![CDATA[AND	(
+									A.NTT_CN LIKE CONCAT ('%', #{searchWrd},'%') or 
+									A.NTT_SJ LIKE CONCAT ('%', #{searchWrd},'%')  
+									
+								)	
+					]]>
+			</when>
+			<when test='searchCnd != null and searchCnd != "" and searchCnd == "nttCn"'>
+				<![CDATA[AND	A.NTT_CN LIKE CONCAT ('%', #{searchWrd},'%') 		]]>
+			</when>
+			<when test='searchCnd != null and searchCnd != "" and searchCnd == "nttSj"'>
+				<![CDATA[AND	A.NTT_SJ LIKE CONCAT ('%', #{searchWrd},'%') 		]]>
+			</when>
+		</choose>				
+	</select>	
+	
+	<insert id="bbsContentsInsert">
+		INSERT INTO TB_BBS_CONTENTS
+			(
+				BBS_ID      
+				,NTT_SJ      
+				,NTT_CN      
+				,THUMB_ATCH_FILE_ID   
+				,ATCH_FILE_ID
+				,VIDEO_FILE_ID
+				,VIDEO_URL
+				,VIDEO_FILE_TYPE
+				,REG_DATE    
+				,REG_ID      
+				,USE_YN      
+				,NTC_YN
+			)
+		values
+			(
+			    #{bbsId}
+			   ,#{nttSj}
+			   ,#{nttCn}
+			   ,#{thumbAtchFileId}
+			   ,#{atchFileId}
+			   ,#{videoFileId}
+			   ,#{videoUrl}
+			   ,#{videoFileType}
+			   <choose>
+			   	<when test='regDate != null and regDate != ""'>
+			   		,#{regDate}
+			   	</when>
+			   	<otherwise>
+			   		,NOW()
+			   	</otherwise>
+			   </choose>
+			   ,#{regId}
+			   ,#{useYn}
+			   ,#{ntcYn}
+			)
+	</insert>
+	
+	<update id="bbsContentsUpdate">
+		UPDATE TB_BBS_CONTENTS
+		set  NTT_SJ        		= #{nttSj}
+		    ,NTT_CN        		= #{nttCn}
+		    ,THUMB_ATCH_FILE_ID = #{thumbAtchFileId}
+		    ,ATCH_FILE_ID  		= #{atchFileId}
+		    ,VIDEO_FILE_ID		= #{videoFileId}
+			,VIDEO_URL			= #{videoUrl}
+			,VIDEO_FILE_TYPE	= #{videoFileType}
+		    ,USE_YN        		= #{useYn}
+		    ,NTC_YN        		= #{ntcYn}
+		    ,MOD_DATE      		= now()
+			,MOD_ID		   		= #{modId}
+		WHERE BBS_ID = #{bbsId}
+			  AND NTT_NO = #{nttNo}
+ 	</update>
+ 	
+ 	<delete id="bbsContentsDelete">
+ 		UPDATE TB_BBS_CONTENTS
+ 		SET USE_YN = 'N'
+ 		WHERE BBS_ID = #{bbsId}
+		AND NTT_NO = #{nttNo}
+ 	</delete>
+ 	
+ 	<select id="bbsContentsView" resultType="egovMap">
+		<![CDATA[
+			SELECT *
+			FROM
+				TB_BBS_CONTENTS
+			WHERE BBS_ID = #{bbsId}
+			AND NTT_NO = #{nttNo}
+		]]>				
+	</select>	
+	
+	<update id="updateBbsContentsRdcnt">
+ 		UPDATE TB_BBS_CONTENTS
+ 		SET RDCNT = (
+						SELECT RDCNT
+ 						FROM 
+		 				(
+							SELECT IFNULL(MAX(RDCNT),0)+1 AS RDCNT 
+							FROM TB_BBS_CONTENTS 
+							WHERE BBS_ID = #{bbsId}
+							AND NTT_NO = #{nttNo} 
+						) A
+					)
+					
+		WHERE BBS_ID = #{bbsId}
+		AND NTT_NO = #{nttNo} 
+ 	</update>
+ 	
+ 	<select id="bbsCommentList" resultType="egovMap">
+ 		SELECT 
+ 			seq,
+ 			bbs_id,
+ 			ntt_no,
+ 			parent_key,
+ 			cn,
+ 			reg_date,
+ 			mod_date,
+ 			reg_id,
+ 			mod_id
+ 		FROM TB_BBS_COMMENT
+ 		WHERE BBS_ID = #{bbsId}
+ 		and NTT_NO = #{nttNo}
+ 		<choose>
+	 		<when test='searchCnd == "notNull"'>
+	 			and parent_key IS NOT NULL
+	 		</when>
+	 		<otherwise>
+	 			and parent_key IS NULL
+		 		ORDER BY REG_DATE DESC
+					<if test='recordCountPerPage > -1' >
+						<![CDATA[	LIMIT #{recordCountPerPage} OFFSET #{firstIndex}	]]>
+					</if>
+			</otherwise>
+		</choose>
+ 	</select>
+ 	
+ 	 <select id="bbsCommentListCnt" resultType="java.lang.Integer">
+ 		SELECT 
+ 			count(*)
+ 		FROM TB_BBS_COMMENT
+ 		WHERE BBS_ID = #{bbsId}
+ 		and NTT_NO = #{nttNo}
+ 		<if test='searchCnd=="notNull"'>
+ 			and parent_key IS NOT NULL
+ 		</if>
+ 	</select>
+ 	
+ 	<insert id="bbsCommentInsert">
+ 		INSERT INTO TB_BBS_COMMENT(
+	 			bbs_id,
+	 			ntt_no,
+	 			parent_key,
+	 			cn,
+	 			reg_date,
+	 			reg_id)
+ 		VALUES (
+ 				#{bbsId}
+ 				,#{nttNo}
+ 				,#{parentKey}
+ 				,#{cn}
+ 			<choose>
+				<when test='regDate != null and regDate != ""'>
+			   		,#{regDate}
+			   	</when>
+			   	<otherwise>
+			   		,NOW()
+			   	</otherwise>
+			 </choose>
+				,#{regId}
+ 			)
+ 	</insert>
+ 	
+ 	<update id="bbsCommentUpdate">
+ 		UPDATE TB_BBS_COMMENT SET
+ 			 CN = #{cn}
+ 			,MOD_DATE      		= now()
+			,MOD_ID		   		= #{modId}
+ 		WHERE SEQ = #{seq}
+ 	</update>
+ 	
+ 	<delete id="bbsCommentDelete">
+ 		DELETE FROM TB_BBS_COMMENT  
+ 		WHERE SEQ = #{seq}
+ 	</delete>
+</mapper>

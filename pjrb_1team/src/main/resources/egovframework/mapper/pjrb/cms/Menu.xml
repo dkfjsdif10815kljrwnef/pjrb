@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cmsMenuDAO">
+	
+   	<select id="menuList" resultType="egovMap">
+			SELECT *
+			FROM tb_menuinfo
+			WHERE 1=1
+			and menu_type = #{menuType}
+			order by menu_depth, menu_num 
+	</select>
+	
+	<select id="menuList_depth" resultType="egovMap">
+			SELECT *
+			FROM tb_menuinfo
+			WHERE 1=1
+			and menu_type = #{menuType}
+			and menu_depth = #{menuDepth}
+			order by parent_menu_id, menu_num
+	</select>
+		
+	<select id="selectMenuInfo" resultType="egovMap">
+   			SELECT * 
+			FROM tb_menuinfo
+			WHERE menu_id = #{menuId}
+			and menu_type = #{menuType}
+	</select>
+	
+	<select id="menuSort" resultType="egovMap">
+			SELECT *
+			FROM tb_menuinfo
+			WHERE parent_menu_id = #{parentMenuId}
+			and menu_type = #{menuType}
+			order by menu_num 
+	</select>
+	
+	<select id="menuSearch" resultType="egovMap">
+			SELECT
+				a.menu_title AS menu1,
+				b.menu_title AS menu2,
+				b.menu_url AS menu2url,
+				c.menu_title AS menu3,
+				a.*
+			FROM
+				tb_menuinfo a
+				LEFT OUTER JOIN tb_menuinfo b
+				ON a.PARENT_MENU_ID = b.MENU_ID
+				LEFT OUTER JOIN tb_menuinfo c
+				ON b.PARENT_MENU_ID = c.MENU_ID
+			WHERE 1=1
+			and menu_type = #{menuType}
+			<if test='searchWrd != null and searchWrd != ""'>
+				AND a.menu_title LIKE CONCAT ('%',#{searchWrd},'%')
+			</if>
+				AND a.MENU_ID != '0'
+				AND a.PARENT_MENU_ID != '0'
+			<if test='recordCountPerPage > -1'>
+				<![CDATA[	LIMIT #{recordCountPerPage} OFFSET #{firstIndex}	]]>
+			</if>
+	</select>
+	
+	<insert id="menuInsert">
+		INSERT into tb_menuinfo
+		(
+			menu_id,
+			parent_menu_id,
+			menu_type,
+			menu_title,
+			menu_desc,
+			menu_depth,
+			menu_url,
+			menu_num,
+			survey,
+			emplyr_id,
+			is_blank,
+			is_rmouse,
+			menu_use
+		)
+		values
+		(
+			#{menuId},
+			#{parentMenuId},
+			#{menuType},
+			#{menuTitle},
+			#{menuDesc},
+			(select if(#{parentMenuId} != '0', (select CASE WHEN MAX(d.menu_depth) IS NULL THEN 1 ELSE MAX(d.menu_depth) + 1 END AS menu_depth from (select c.menu_depth from tb_menuinfo c where c.menu_id = #{parentMenuId} group by c.menu_depth) d), 1)),
+			#{menuUrl},
+			(select ifnull(max(d.menu_num)+1,1) from tb_menuinfo d where d.parent_menu_id = #{parentMenuId}), 
+			#{survey},
+			#{emplyrId},
+			#{isBlank},
+			#{isRmouse},
+			#{menuUse}
+		)
+	</insert>
+	
+	<update id="menuUpdate">
+		UPDATE tb_menuinfo set
+			menu_title = #{menuTitle},
+			menu_desc = #{menuDesc},
+			menu_url = #{menuUrl},
+			menu_use = #{menuUse},
+			emplyr_id = #{emplyrId},
+			is_blank = #{isBlank},
+			is_rmouse = #{isRmouse}
+		WHERE menu_id = #{menuId}
+	</update>
+	
+	<update id="menuSortUpdate">
+		UPDATE tb_menuinfo set
+			menu_num = #{menuNum}
+		WHERE menu_id = #{menuId}
+	</update>
+	
+	<delete id="menuDelete_1depth">
+		DELETE FROM tb_menuinfo
+		WHERE menu_id = #{menuId}
+	</delete>
+	
+	<delete id="menuDelete_2depth">
+		DELETE FROM tb_menuinfo
+		WHERE parent_menu_id = #{menuId}
+	</delete>
+	
+	<delete id="menuDelete_3depth">
+		DELETE 
+		FROM tb_menuinfo
+		WHERE parent_menu_id in 
+		(SELECT c.menu_id FROM 
+			(SELECT b.menu_id FROM tb_menuinfo b WHERE b.parent_menu_id = #{menuId}) c
+		)
+	</delete>
+	
+	<update id="updateMenuNav">	
+		UPDATE TB_MENUINFO 
+		SET MENU_NAV     = #{menuNav}
+		   ,MENU_ID_PATH = #{menuIdPath}
+		WHERE MENU_ID = #{menuId}
+	</update>
+</mapper>

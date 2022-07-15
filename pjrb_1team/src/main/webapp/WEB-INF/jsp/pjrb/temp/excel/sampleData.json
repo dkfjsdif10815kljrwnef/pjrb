@@ -1,0 +1,19 @@
+{    
+	"type1": [ {"type" : "중국권역" , "contry" : "China(운남-YAAS)" , "value" : "350"}],
+	"type2": [ {"type" : "중남미권역" , "contry" : "Chile" , "value" : "161" }, {"type" : "중남미권역" , "contry" : "Costa Rica" , "value" : "300"}],
+	"type3": [ {"type" : "동남아권역" , "contry" : "Indonesia" , "value" : "301"}, {"type" : "동남아권역" , "contry" : "Micronesia" , "value" : "121"} ],
+	"type4": [ {"type" : "인도차이나권역" , "contry" : "Vietnam(IEBR)" , "value" : "699"}, 
+				{"type" : "인도차이나권역" , "contry" : "Cambodia(KIC)" , "value" : "102"}, 
+				{"type" : "인도차이나권역" , "contry" : "Laos" , "value" : "201"}],
+	"type5": [ {"type" : "아프리카권역" , "contry" : "USA-USA" , "value" : "29"},
+				{"type" : "아프리카권역" , "contry" : "USA-Cameroon" , "value" : "34"},
+				{"type" : "아프리카권역" , "contry" : "USA-Ghana" , "value" : "19"},
+				{"type" : "아프리카권역" , "contry" : "USA-Peru" , "value" : "20"},
+				{"type" : "아프리카권역" , "contry" : "USA-Philippines" , "value" : "28"},
+				{"type" : "아프리카권역" , "contry" : "USA-Tanzania" , "value" : "35"},
+				{"type" : "아프리카권역" , "contry" : "USA-Kenya" , "value" : "30"},
+				{"type" : "아프리카권역" , "contry" : "USA-Zimbabwe" , "value" : "30"},
+				{"type" : "아프리카권역" , "contry" : "DR Congo" , "value" : "29"},
+				{"type" : "아프리카권역" , "contry" : "USA-South Africa" , "value" : "1"},
+				{"type" : "아프리카권역" , "contry" : "USA-Canada" , "value" : "41"}]
+}

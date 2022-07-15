@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="TempDAO">
+	
+	<select id="popupList" resultType="egovMap">
+		<![CDATA[			
+			select * 
+			from tb_popup 
+			where 1=1 
+		]]>
+			<if test='searchStatus != null and searchStatus != ""'>
+				<![CDATA[AND	status = #{searchStatus}	]]>
+			</if>
+			<if test='searchCnd != null and searchCnd != "" and searchCnd == "all"'>
+				<![CDATA[AND	(title LIKE CONCAT('%',#{searchWrd} ,'%') OR detail LIKE CONCAT('%',#{searchWrd} ,'%'))	]]>
+			</if>
+			<if test='searchCnd != null and searchCnd != "" and searchCnd == "title"'>
+				<![CDATA[AND	title LIKE CONCAT('%',#{searchWrd} ,'%')	]]>
+			</if>
+			<if test='searchCnd != null and searchCnd != "" and searchCnd == "detail"'>
+				<![CDATA[AND	detail LIKE CONCAT('%',#{searchWrd} ,'%')	]]>
+			</if>
+			<if test='searchCnd != null and searchCnd != "" and searchCnd == "main"'>
+				AND date_format(NOW(),'%Y%m%d %H%i%s') BETWEEN date_format(concat(start_date,' ',start_time,':00:00'),'%Y%m%d %H%i%s') AND date_format(concat(end_date,' ',end_time,':00:00'),'%Y%m%d %H%i%s')
+			</if>
+		<![CDATA[
+			order by REG_DATE desc, title asc
+		]]>			
+		<if test='recordCountPerPage > -1'>
+			<![CDATA[	LIMIT #{recordCountPerPage} OFFSET #{firstIndex}	]]>
+		</if>
+	</select>
+		
+	<select id="popupListCnt" resultType="int">
+   			select count(*)
+			from tb_popup 
+			where 1=1
+			<if test='searchStatus != null and searchStatus != ""'>
+				<![CDATA[AND	status = #{searchStatus}	]]>
+			</if>
+			<if test='searchCnd != null and searchCnd != "" and searchCnd == "all"'>
+				<![CDATA[AND	(title LIKE CONCAT('%',#{searchWrd} ,'%') OR detail LIKE CONCAT('%',#{searchWrd} ,'%'))	]]>
+			</if>
+			<if test='searchCnd != null and searchCnd != "" and searchCnd == "title"'>
+				<![CDATA[AND	title LIKE CONCAT('%',#{searchWrd} ,'%')	]]>
+			</if>
+			<if test='searchCnd != null and searchCnd != "" and searchCnd == "detail"'>
+				<![CDATA[AND	detail LIKE CONCAT('%',#{searchWrd} ,'%')	]]>
+			</if>
+			<if test='searchCnd != null and searchCnd != "" and searchCnd == "main"'>
+				AND date_format(NOW(),'%Y%m%d %H%i%s') BETWEEN date_format(concat(start_date,' ',start_time,':00:00'),'%Y%m%d %H%i%s') AND date_format(concat(end_date,' ',end_time,':00:00'),'%Y%m%d %H%i%s')
+			</if>
+	</select>
+	
+	<insert id="popupInsert">
+		<![CDATA[
+			insert into tb_popup
+			(
+				flag, status, title, detail, address, start_date,
+				start_time, end_date, end_time, width_size, width_location,
+				height_size, height_location, atch_file_id, reg_date, mod_date, login_chk
+			)
+			values
+			(
+				#{flag}, #{status}, #{title}, #{detail}, #{address}, #{startDate},
+				#{startTime}, #{endDate}, #{endTime}, #{widthSize}, #{widthLocation},
+				#{heightSize}, #{heightLocation}, #{atchFileId}, now(), now(), #{loginChk}
+			)
+		]]>
+	</insert>
+	
+	<update id="popupUpdate">
+			update tb_popup set
+				flag = #{flag},
+				status = #{status},
+				title = #{title},
+				detail = #{detail},
+				address = #{address},
+				start_date = #{startDate},
+				start_time = #{startTime},
+				end_date = #{endDate},
+				end_time = #{endTime},
+				width_size = #{widthSize},
+				width_location = #{widthLocation},
+				height_size = #{heightSize},
+				height_location = #{heightLocation},
+				atch_file_id = #{atchFileId},
+				mod_date = now(),
+				login_chk = #{loginChk}
+			where seq = #{seq}
+	</update>
+	
+	<update id="popupStatusUpdate">
+			update tb_popup set
+				STATUS = #{status},
+				MOD_DATE = now()
+			where seq = #{seq}
+	</update>
+	
+	<delete id="popupDelete">
+			delete from tb_popup
+			where seq = #{seq}
+	</delete>
+	
+	<select id="popupView" resultType="egovMap">
+			select *
+			from tb_popup 
+			where 1=1
+			and seq = #{seq}
+	</select>
+	
+</mapper>

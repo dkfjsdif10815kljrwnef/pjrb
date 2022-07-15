@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd">
+	
+	<!-- 페이지관리 엑셀다운 -->
+	<bean id="pageMngExcelDown" class="pjrb.cms.pagemng.service.PageMngExcelDownMapping" />
+	
+	<!-- 게시판 엑셀다운 -->
+	<bean id="bbsExcelDown" class="pjrb.cms.bbs.service.BbsExcelDownMapping" />
+	
+	<!-- 게시판 엑셀다운(이미지) -->
+	<bean id="bbsContentsExcelDown" class="pjrb.cms.bbs.service.BbsContentsExcelDownMapping" />
+	
+	<!-- 게시판관리 엑셀다운 -->
+	<bean id="bbsMngExcelDown" class="pjrb.cms.bbs.service.BbsMngExcelDownMapping" />
+	
+	<!-- 회원 -->
+	<bean id="memberListMapping" class="pjrb.cms.excel.memberExcelDownMapping" />
+	
+	<!-- 팝업 -->
+	<bean id="popupListMapping" class="pjrb.cms.excel.popupExcelDownMapping" />
+	
+	<!-- 배너, 관련사이트 -->
+	<bean id="bannerListMapping" class="pjrb.cms.excel.bannerExcelDownMapping" />
+	
+	<!-- 접속 통계 -->
+	<bean id="constatListMapping" class="pjrb.cms.excel.constatExcelDownMapping" />
+	
+	<!-- 페이지 통계 -->
+	<bean id="pagestatListMapping" class="pjrb.cms.excel.pagestatExcelDownMapping" />
+	
+	<!-- Egov -->
+ 	<bean id="categoryExcelView" class="pjrb.cms.temp.excel.egov.CategoryExcelView" />
+ 	<bean id="CategoryPOIExcelView" class="pjrb.cms.temp.excel.egov.CategoryPOIExcelView" />
+ 	<bean id="TegovExcelView" class="pjrb.cms.temp.excel.egov.TegovExcelView" />
+</beans>

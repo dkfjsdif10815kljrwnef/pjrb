@@ -1,0 +1,294 @@
+@charset "UTF-8";
+/* CSS Document */
+
+/* css reset */
+
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary, time, mark, audio, video {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 100%;
+  vertical-align: baseline;
+}
+
+/* HTML5 display-role reset for older browsers */
+
+article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {
+  display: block;
+}
+
+body {
+  line-height: 1;
+}
+
+ol, ul {
+  list-style: none;
+}
+
+blockquote, q {
+  quotes: none;
+}
+
+blockquote:before, blockquote:after, q:before, q:after {
+  content: '';
+  content: none;
+}
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+html, body {
+  font-family: 'NotoSansKR', '맑은고딕', sans-serif;
+  font-weight: 400;
+  font-size: 10px;
+  -webkit-text-size-adjust: 100%;
+  font-smoothing: antialiased;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.004);
+  text-stroke: 0.6px;
+  /* 마치 맥의 폰트처럼 두께 라인을 살려준다. */
+  text-rendering: optimizeLegibility;
+}
+
+.custom-select, input[type="text"], input[type="password"], input[type="file"], input[type="date"], input[type="time"] {
+  font-family: 'NotoSansKR', '맑은고딕', sans-serif;
+  font-size: 1.4rem;
+  height: 40px;
+  padding: .8rem;
+}
+
+input[type="file"] {
+  padding: .45rem .9rem
+}
+
+.btn {
+  font-size: 1.3rem;
+  height: 40px;
+}
+
+span.search-icon {
+  font-family: 'Font Awesome 5 Pro';
+  position: absolute;
+  z-index: 9;
+  font-size: 1.6rem;
+  line-height: 38px;
+  left: 10px;
+  top: 0;
+  padding-right: 40px;
+}
+
+span.search-icon::before {
+  content: "\f002";
+}
+
+#top-search {
+  padding-left: 30px;
+}
+
+.padding-right0 {
+  padding-right: 0 !important;
+}
+
+.row>.input-group.col-sm {
+  padding-right: 0 !important;
+}
+
+.badge {
+  font-size: 1.3rem;
+}
+
+.password-eye {
+  width: 25px;
+  display: inline-block;
+}
+
+.password-eye:before {
+  font-family: 'Font Awesome 5 Pro';
+  content: "\f06e";
+  font-style: normal;
+  font-weight: 400;
+  font-variant: normal;
+  vertical-align: middle;
+  line-height: 1.2;
+  font-size: 1.6rem;
+}
+
+.show-password .password-eye:before {
+  content: "\f070"
+}
+
+.form-group label {
+  font-size: 1.5rem;
+  margin-bottom: .5rem;
+}
+
+.custom-control.custom-checkbox {
+  min-width: 1.6rem;
+  width: auto;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.custom-control.custom-checkbox label {
+  font-size: 1.4rem;
+}
+
+.custom-control.custom-checkbox label span {
+  padding-left: 22px;
+  position: relative;
+  top: -1px;
+}
+
+.custom-control.custom-radio label span {
+  padding-left: 22px;
+  position: relative;
+  top: -1px;
+}
+
+.custom-control.custom-checkbox .custom-control-label::before {
+  left: 0;
+}
+
+.custom-control.custom-checkbox .custom-control-label::after {
+  left: 0;
+}
+
+.rightbar-content .custom-control.custom-switch .custom-control-label {
+  padding-left: 1.3rem;
+}
+
+.rightbar-content .custom-control.custom-switch .custom-control-label span {
+  position: relative;
+  top: -1px;
+}
+
+.input-group-btn .btn {
+  min-width: 40px;
+  font-size: 1.4rem;
+}
+
+.input-group-text {
+  min-width: 40px;
+}
+
+.input-group-text i {
+  font-size: 1.4rem;
+  margin: 0 auto;
+}
+
+.bottom-btn>.btn {
+  font-size: 1.5rem;
+  min-width: 100px;
+  margin-right: 8px;
+}
+
+.bottom-btn>.btn:last-child {
+  margin-right: 0;
+}
+
+.mdi-chevron-up::before {
+  content: "\f106";
+}
+
+.mdi-set, .mdi:before {
+  display: inline-block;
+  font: normal normal normal 24px/1 'Font Awesome 5 Pro';
+  font-size: inherit;
+  text-rendering: auto;
+  line-height: inherit;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.mdi-chevron-down::before {
+  content: "\f107";
+}
+
+.bootstrap-timepicker-hour, .bootstrap-timepicker-minute, .bootstrap-timepicker-second, .bootstrap-timepicker-meridian {
+  width: 32px !important;
+  height: 32px !important;
+  padding: 0 !important;
+  text-align: center;
+}
+
+/* .row.time02, .row.time03, .row.time04, .row.time05, .row.time06, .row.time07, .row.time08, .row.time09, .row.time10 {
+  display: none;
+} */
+
+.row {
+  /*margin-bottom: 1.5rem;*/
+}
+
+select.form-control:before {
+  font-family: 'Font Awesome 5 Pro';
+  content: "\f107";
+  color: #000;
+  position: relative;
+  right: 4%;
+  font-size: 1.8rem;
+}
+
+input[data-switch]+label:before, input[data-switch]+label:after {
+  font-family: 'NotoSansKR', '맑은고딕', sans-serif;
+  font-size: 1.2rem !important;
+  letter-spacing: -.8px;
+  line-height: 26px;
+}
+
+input[data-switch]+label {
+  width: 64px;
+  height: 26px;
+}
+
+input[data-switch]:checked+label:after {
+  left: 41px;
+}
+
+input[data-switch]+label:after {
+  width: 20px;
+  height: 20px;
+}
+
+.modal-body label {
+  font-size: 1.5rem;
+}
+
+.fc-axis.fc-widget-header {
+  width: 66px !important;
+}
+
+.fc-content .fc-time {
+  display: none;
+}
+
+#calendar .fc-right {
+  display: none;
+}
+
+select:disabled {
+  color: #6c757d;
+  background-color: #e9ecef !important;
+}
+
+.alert .custom-control-input:disabled~.custom-control-label, .alert .custom-control-input[disabled]~.custom-control-label {
+  color: #000 !important
+}
+
+.width5p {
+  width: 5%;
+}
+
+.width8p {
+  width: 8%;
+}
+
+.width10p {
+  width: 10%;
+}
+
+.width300 {
+  width: 300px;
+}

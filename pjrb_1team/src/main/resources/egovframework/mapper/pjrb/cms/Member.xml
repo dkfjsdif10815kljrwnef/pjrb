@@ -1,0 +1,393 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cmsMemberDAO">
+
+	
+	<select id="memberList" resultType="egovMap">
+		<![CDATA[			
+			select *, (select grade_nm from tb_grade where grade = a.grade) as gradeNm
+			from tb_member a
+			where 1=1
+			and grade != '0'
+		]]>
+		
+		<if test='searchType != null and searchType != ""'>
+			AND type = #{searchType}
+		</if>
+		<if test='searchCnd != null and searchCnd != "" and searchCnd == "all"'>
+			<![CDATA[AND	(USER_NM LIKE CONCAT('%',#{searchWrd} ,'%') OR EMPLYR_ID LIKE CONCAT('%',#{searchWrd} ,'%'))	]]>
+		</if>
+		<if test='searchCnd != null and searchCnd != "" and searchCnd == "userNm"'>
+			<![CDATA[AND	USER_NM LIKE CONCAT('%',#{searchWrd} ,'%')	]]>
+		</if>
+		<if test='searchCnd != null and searchCnd != "" and searchCnd == "emplyrId"'>
+			<![CDATA[AND	EMPLYR_ID LIKE CONCAT('%',#{searchWrd} ,'%')	]]>
+		</if>
+		<![CDATA[
+			order by REG_DATE desc, USER_NM asc
+		]]>		
+		<if test='recordCountPerPage > -1'>
+			<![CDATA[	LIMIT #{recordCountPerPage} OFFSET #{firstIndex}	]]>
+		</if>	
+	</select>
+		
+	<select id="memberListCnt" resultType="int">
+   			select count(*)
+			from tb_member 
+			where 1=1
+			and grade != '0'
+			<if test='searchType != null and searchType != ""'>
+				AND type = #{searchType}
+			</if>
+			<if test='searchCnd != null and searchCnd != "" and searchCnd == "all"'>
+				<![CDATA[AND	(USER_NM LIKE CONCAT('%',#{searchWrd} ,'%') OR EMPLYR_ID LIKE CONCAT('%',#{searchWrd} ,'%'))	]]>
+			</if>
+			<if test='searchCnd != null and searchCnd != "" and searchCnd == "userNm"'>
+				<![CDATA[AND	USER_NM LIKE CONCAT('%',#{searchWrd} ,'%')	]]>
+			</if>
+			<if test='searchCnd != null and searchCnd != "" and searchCnd == "emplyrId"'>
+				<![CDATA[AND	EMPLYR_ID LIKE CONCAT('%',#{searchWrd} ,'%')	]]>
+			</if>
+	</select>
+	
+	<insert id="memberAdminInsert">
+		<![CDATA[
+			insert into tb_member_admin
+			(
+				EMPLYR_ID, WRONG_CNT, CHANGE_DATE, LAST_LOGIN_DATE, GRADE, 
+				USER_NM, PASSWORD, STATUS, EMAIL, PHONE, 
+				DEPARTMENT, POSITION, REG_DATE, MOD_DATE
+			)
+			values
+			(
+				#{emplyrId}, 0, now(), now(), '11', 
+				#{userNm}, #{password}, #{status}, #{email}, #{phone}, 
+				#{department}, #{position}, now(), now()
+			)
+		]]>
+	</insert>
+	
+	<insert id="memberGeneralInsert">
+		<![CDATA[
+			insert into tb_member_general
+			(
+				EMPLYR_ID, WRONG_CNT, CHANGE_DATE, LAST_LOGIN_DATE, STATUS, 
+				USER_NM, PASSWORD, EMAIL, PHONE, ADRES, 
+				DETAIL_ADRES, ZIP, REG_DATE, MOD_DATE
+			)
+			values
+			(
+				#{emplyrId}, 0, now(), now(), #{status}, 
+				#{userNm}, #{password}, #{email}, #{phone}, #{adres}, 
+				#{detailAdres}, #{zip}, now(), now()
+			)
+		]]>
+	</insert>
+	
+	<insert id="memberOrgnztInsert">
+		<![CDATA[
+			insert into tb_member_orgnzt
+			(
+				EMPLYR_ID, WRONG_CNT, CHANGE_DATE, LAST_LOGIN_DATE, STATUS, 
+				USER_NM, PASSWORD, EMAIL, PHONE, ADRES, 
+				DETAIL_ADRES, ZIP, ORGNZT_FLAG, ORGNZT_FLAG_DETAIL, ORGNZT_NM,
+				CEO_NM, BUSINESS_NUM, ORGNZT_NUM, DEPARTMENT, POSITION, 
+				REG_DATE, MOD_DATE
+			)
+			values
+			(
+				#{emplyrId}, 0, now(), now(), #{status}, 
+				#{userNm}, #{password}, #{email}, #{phone}, #{adres}, 
+				#{detailAdres}, #{zip}, #{orgnztFlag}, #{orgnztFlagDetail}, #{orgnztNm},
+				#{ceoNm}, #{businessNum}, #{orgnztNum}, #{department}, #{position}, 
+				now(), now()
+			)
+		]]>
+	</insert>
+	
+	<update id="memberAdminUpdate">
+			update tb_member_admin set
+				STATUS = #{status},
+				USER_NM = #{userNm},
+				<if test='pwChange != null and pwChange != ""  and pwChange == "1"'>
+					change_date = now(),
+					wrong_cnt = 0,
+					PASSWORD = #{password}, 
+				</if>
+				EMAIL = #{email},
+				PHONE = #{phone},
+				DEPARTMENT = #{department},
+				POSITION = #{position},
+				MOD_DATE = now()
+			where EMPLYR_ID = #{emplyrId}
+	</update>
+	
+	<update id="memberGeneralUpdate">
+			update tb_member_general set
+				STATUS = #{status},
+				USER_NM = #{userNm},
+				<if test='pwChange != null and pwChange != ""  and pwChange == "1"'>
+					change_date = now(),
+					wrong_cnt = 0,
+					PASSWORD = #{password}, 
+				</if>
+				EMAIL = #{email},
+				PHONE = #{phone},
+				ADRES = #{adres}, 
+				DETAIL_ADRES = #{detailAdres}, 
+				ZIP = #{zip},
+				DELETE_AT = #{deleteAt},
+				DELETE_REASON = #{deleteReason},
+				MOD_DATE = now()
+			where EMPLYR_ID = #{emplyrId}
+	</update>
+	
+	<update id="memberOrgnztUpdate">
+			update tb_member_orgnzt set
+				STATUS = #{status},
+				USER_NM = #{userNm},
+				<if test='pwChange != null and pwChange != ""  and pwChange == "1"'>
+					change_date = now(),
+					wrong_cnt = 0,
+					PASSWORD = #{password}, 
+				</if>
+				EMAIL = #{email},
+				PHONE = #{phone},
+				ADRES = #{adres}, 
+				DETAIL_ADRES = #{detailAdres}, 
+				ZIP = #{zip},
+				ORGNZT_FLAG = #{orgnztFlag},
+				ORGNZT_FLAG_DETAIL = #{orgnztFlagDetail},
+				ORGNZT_NM = #{orgnztNm},
+				CEO_NM = #{ceoNm},
+				BUSINESS_NUM = #{businessNum}, 
+				ORGNZT_NUM = #{orgnztNum},
+				DEPARTMENT = #{department},
+				POSITION = #{position},
+				ALLOW_YN = #{allowYn},
+				DELETE_AT = #{deleteAt},
+				DELETE_REASON = #{deleteReason},
+				MOD_DATE = now()
+			where EMPLYR_ID = #{emplyrId}
+	</update>
+	
+	
+	<update id="memberAdminPwInit">
+			update tb_member_admin set
+				wrong_cnt = 0,
+				LAST_LOGIN_DATE = now()
+			where EMPLYR_ID = #{emplyrId}
+	</update>
+	
+	<update id="memberGeneralPwInit">
+			update tb_member_general set
+				wrong_cnt = 0,
+				LAST_LOGIN_DATE = now()
+			where EMPLYR_ID = #{emplyrId}
+	</update>
+	
+	<update id="memberOrgnztPwInit">
+			update tb_member_orgnzt set
+				wrong_cnt = 0,
+				LAST_LOGIN_DATE = now()
+			where EMPLYR_ID = #{emplyrId}
+	</update>
+	
+	<update id="memberAdminPwWrong">
+			update tb_member_admin set
+				wrong_cnt = wrong_cnt+1,
+				MOD_DATE = now()
+			where EMPLYR_ID = #{emplyrId}
+	</update>
+	
+	<update id="memberGeneralPwWrong">
+			update tb_member_general set
+				wrong_cnt = wrong_cnt+1,
+				MOD_DATE = now()
+			where EMPLYR_ID = #{emplyrId}
+	</update>
+	
+	<update id="memberOrgnztPwWrong">
+			update tb_member_orgnzt set
+				wrong_cnt = wrong_cnt+1,
+				MOD_DATE = now()
+			where EMPLYR_ID = #{emplyrId}
+	</update>
+	
+	<update id="memberAdminStatusUpdate">
+			update tb_member_admin set
+				STATUS = #{status},
+				MOD_DATE = now()
+			where EMPLYR_ID = #{emplyrId}
+	</update>
+	
+	<update id="memberGeneralStatusUpdate">
+			update tb_member_general set
+				STATUS = #{status},
+				MOD_DATE = now()
+			where EMPLYR_ID = #{emplyrId}
+	</update>
+	
+	<update id="memberOrgnztStatusUpdate">
+			update tb_member_orgnzt set
+				STATUS = #{status},
+				MOD_DATE = now()
+			where EMPLYR_ID = #{emplyrId}
+	</update>
+	
+	<update id="memberOrgnztAllowYnUpdate">
+			update tb_member_orgnzt set
+				ALLOW_YN = #{allowYn},
+				MOD_DATE = now()
+			where EMPLYR_ID = #{emplyrId}
+	</update>
+	
+	<update id="memberGradeUpdate">
+			update tb_member_admin set
+				GRADE = #{grade},
+				MOD_DATE = now()
+			where EMPLYR_ID = #{emplyrId}
+	</update>
+	
+	<update id="memberAdminPassUpdate">
+			update tb_member_admin set
+				change_date = now(),
+				wrong_cnt = 0,
+				PASSWORD = #{password},
+				MOD_DATE = now()
+			where EMPLYR_ID = #{emplyrId}
+	</update>
+	
+	<update id="memberGeneralPassUpdate">
+			update tb_member_general set
+				change_date = now(),
+				wrong_cnt = 0,
+				PASSWORD = #{password},
+				MOD_DATE = now()
+			where EMPLYR_ID = #{emplyrId}
+	</update>
+	
+	<update id="memberOrgnztPassUpdate">
+			update tb_member_orgnzt set
+				change_date = now(),
+				wrong_cnt = 0,
+				PASSWORD = #{password},
+				MOD_DATE = now()
+			where EMPLYR_ID = #{emplyrId}
+	</update>
+	
+	<delete id="memberAdminDelete">
+			delete from tb_member_admin
+			where EMPLYR_ID = #{emplyrId}
+	</delete>
+	
+	<delete id="memberGeneralDelete">
+			delete from tb_member_general
+			where EMPLYR_ID = #{emplyrId}
+	</delete>
+	
+	<delete id="memberOrgnztDelete">
+			delete from tb_member_orgnzt
+			where EMPLYR_ID = #{emplyrId}
+	</delete>
+	
+	<select id="memberInfoView" resultType="egovMap">
+			select *
+			from tb_member
+			where 1=1
+			and EMPLYR_ID = #{emplyrId}
+	</select>
+	
+	<select id="memberAdminView" resultType="egovMap">
+			select *, 'admin' as type
+			from tb_member_admin
+			where 1=1
+			and EMPLYR_ID = #{emplyrId}
+	</select>
+	
+	<select id="memberGeneralView" resultType="egovMap">
+			select *, 'general' as type
+			from tb_member_general
+			where 1=1
+			and EMPLYR_ID = #{emplyrId}
+	</select>
+	
+	<select id="memberOrgnztView" resultType="egovMap">
+			select *, 'orgnzt' as type
+			from tb_member_orgnzt
+			where 1=1
+			and EMPLYR_ID = #{emplyrId}
+	</select>
+	
+	<select id="memberIdChk" resultType="java.lang.Integer">
+		select
+			count(EMPLYR_ID)
+		from
+			tb_member
+		where
+			EMPLYR_ID = #{emplyrId}
+	</select>
+	
+	<select id="bisNumChk" resultType="java.lang.Integer">
+		select
+			count(EMPLYR_ID)
+		from
+			tb_member_orgnzt
+		where 
+			BUSINESS_NUM = #{businessNum}
+	</select>
+	
+	
+	<insert id="cmsMemberDAO.insertSessionLogin">
+		INSERT INTO TB_SESSION 
+			(
+				EMPLYR_ID
+			   ,UUID
+			   ,REG_DATE
+			   ,STATUS
+			)
+		VALUES
+			(
+				#{emplyrId}
+			   ,#{uuid}
+			   ,NOW()
+			   ,#{status}
+			)
+	</insert>
+	
+	<delete id="cmsMemberDAO.deleteSessionLogin">
+		DELETE FROM TB_SESSION
+		WHERE EMPLYR_ID = #{emplyrId} AND UUID =  #{uuid}
+	</delete>
+	
+	<delete id="cmsMemberDAO.deleteSessionLoginAll">
+		DELETE FROM TB_SESSION
+		WHERE  STATUS = '1'
+	</delete>
+	
+	<select id="cmsMemberDAO.selectSessionLogin" resultType="egovMap">
+		SELECT  EMPLYR_ID
+			   ,UUID
+			   ,REG_DATE
+			   ,STATUS
+		FROM TB_SESSION
+		WHERE EMPLYR_ID = #{emplyrId} AND UUID =  #{uuid}
+	</select>
+	
+	<select id="cmsMemberDAO.selectSessionLogin_id" resultType="egovMap">
+		SELECT  EMPLYR_ID
+			   ,UUID
+			   ,REG_DATE
+			   ,STATUS
+		FROM TB_SESSION
+		WHERE EMPLYR_ID = #{emplyrId} AND STATUS = '0'
+	</select>
+	
+	<update id="cmsMemberDAO.updateSessionLogin">
+		UPDATE TB_SESSION
+		SET STATUS = #{status}
+		WHERE EMPLYR_ID = #{emplyrId}
+	</update>
+</mapper>

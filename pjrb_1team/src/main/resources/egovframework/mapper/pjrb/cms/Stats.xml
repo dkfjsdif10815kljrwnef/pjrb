@@ -1,0 +1,347 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cmsStatsDAO">
+
+	
+   	<select id="constatList" resultType="egovMap">
+   		
+   		SELECT *
+   		FROM
+   		(
+			SELECT 
+			<if test='searchCnd == null or searchCnd == ""'>
+				DATE_FORMAT(date,'%Y-%m-%d %p %h:00') parse_date, COUNT(*) total, count(os_pc) pc, count(os_mobile) mobile
+			</if>
+			<if test='searchCnd != null and searchCnd != ""'>
+				<if test='searchCnd == "time"'>
+					DATE_FORMAT(date,'%Y-%m-%d %p %h:00') parse_date, COUNT(*) total, count(os_pc) pc, count(os_mobile) mobile
+				</if>
+				<if test='searchCnd == "day"'>
+					DATE_FORMAT(date,'%Y-%m-%d') parse_date, COUNT(*) total, count(os_pc) pc, count(os_mobile) mobile
+				</if>
+				<if test='searchCnd == "month"'>
+					DATE_FORMAT(date,'%Y-%m') parse_date, COUNT(*) total, count(os_pc) pc, count(os_mobile) mobile
+				</if>
+				<if test='searchCnd == "year"'>
+					DATE_FORMAT(date,'%Y') parse_date, COUNT(*) total, count(os_pc) pc, count(os_mobile) mobile
+				</if>
+				
+			</if>
+			,DATE_FORMAT(date,'%Y-%m-%d %H') orderDate
+			FROM tb_stat_con
+			WHERE 1=1
+			<if test='engYn != null and engYn != ""'>
+				AND eng_yn = #{engYn}
+			</if>
+			<if test='startDate != null and startDate != ""'>
+				<if test='endDate != null  and endDate != ""'>
+					AND DATE_FORMAT(date,'%Y%m%d') >= DATE_FORMAT(#{startDate},'%Y%m%d')
+					<![CDATA[ AND DATE_FORMAT(date,'%Y%m%d') <= DATE_FORMAT(#{endDate},'%Y%m%d') ]]>
+				</if>
+				<if test='endDate == null or endDate  == ""'>
+					AND DATE_FORMAT(date,'%Y%m%d') >= DATE_FORMAT(#{startDate},'%Y%m%d')
+				</if>
+			</if>
+			<if test='endDate != null and endDate != ""'>
+				<if test='startDate == null or startDate == ""'>
+					<![CDATA[ AND DATE_FORMAT(date,'%Y%m%d') <= DATE_FORMAT(#{endDate},'%Y%m%d') ]]>
+				</if>
+			</if>
+			
+			<if test='searchCnd == null  or searchCnd == ""'>
+				GROUP BY DATE_FORMAT(date,'%Y-%m-%d %p %h:00')
+				<if test='startDate != null and startDate !="" and endDate != null and endDate != ""'>
+					ORDER BY DATE_FORMAT(date,'%Y-%m-%d %p %h:00') desc
+				</if>
+			</if>								
+			<if test='searchCnd != null and searchCnd != ""'>
+				<if test='searchCnd == "time"'>
+					GROUP BY DATE_FORMAT(date,'%Y-%m-%d %p %h:00')
+					<if test='startDate != null and startDate !="" and endDate != null and endDate != ""'>
+						ORDER BY DATE_FORMAT(date,'%Y-%m-%d %p %h:00') desc
+					</if>
+				</if>
+				<if test='searchCnd == "day"'>
+					GROUP BY DATE_FORMAT(date,'%Y-%m-%d')
+					<if test='startDate != null and startDate !="" and endDate != null and endDate != ""'>
+						ORDER BY DATE_FORMAT(date,'%Y-%m-%d') desc
+					</if>
+				</if>
+				<if test='searchCnd == "month"'>
+					GROUP BY DATE_FORMAT(date,'%Y-%m')
+					<if test='startDate != null and startDate !="" and endDate != null and endDate != ""'>
+						ORDER BY DATE_FORMAT(date,'%Y-%m') desc
+					</if>
+				</if>
+				<if test='searchCnd == "year"'>
+					GROUP BY DATE_FORMAT(date,'%Y')
+					<if test='startDate != null and startDate !="" and endDate != null and endDate != ""'>
+						ORDER BY DATE_FORMAT(date,'%Y') desc
+					</if>
+				</if>
+			</if>
+			<if test='recordCountPerPage > -1'>
+				<![CDATA[	LIMIT #{recordCountPerPage} OFFSET #{firstIndex}	]]>
+			</if>			
+		) z
+		<if test='searchCnd == null or searchCnd == ""'>
+			<if test='searchOrder != null and searchOrder != ""  and searchOrder == "chart"'>
+				ORDER BY DATE_FORMAT(orderDate,'%Y-%m-%d %H') asc
+			</if>
+		</if>
+		<if test='searchCnd != null and searchCnd != ""'>
+			<if test='searchCnd == "time"'>
+				<if test='searchOrder != null and searchOrder != "" and searchOrder == "chart"'>
+					ORDER BY DATE_FORMAT(orderDate,'%Y-%m-%d %H') asc
+				</if>
+			</if>
+			<if test='searchCnd == "day"'>
+				<if test='searchOrder != null and searchOrder != "" and searchOrder == "chart"'>
+					ORDER BY DATE_FORMAT(orderDate,'%Y-%m-%d') asc
+				</if>
+			</if>
+			<if test='searchCnd == "month"'>
+				<if test='searchOrder != null and searchOrder != "" and searchOrder == "chart"'>
+					ORDER BY DATE_FORMAT(orderDate,'%Y-%m') asc
+				</if>
+			</if>
+			<if test='searchCnd == "year"'>
+				<if test='searchOrder != null and searchOrder != "" and searchOrder == "chart"'>
+					ORDER BY DATE_FORMAT(orderDate,'%Y') asc
+				</if>
+			</if>
+		</if>
+	</select>
+	
+   	<select id="constatListCnt" resultType="int">
+		SELECT count(*)
+   		FROM
+   		(
+			SELECT 
+			<if test='searchCnd == null or searchCnd == ""'>
+				DATE_FORMAT(date,'%Y-%m-%d %p %h:00') parse_date, COUNT(*) total, count(os_pc) pc, count(os_mobile) mobile
+			</if>
+			<if test='searchCnd != null and searchCnd != ""'>
+				<if test='searchCnd == "time"'>
+					DATE_FORMAT(date,'%Y-%m-%d %p %h:00') parse_date, COUNT(*) total, count(os_pc) pc, count(os_mobile) mobile
+				</if>
+				<if test='searchCnd == "day"'>
+					DATE_FORMAT(date,'%Y-%m-%d') parse_date, COUNT(*) total, count(os_pc) pc, count(os_mobile) mobile
+				</if>
+				<if test='searchCnd == "month"'>
+					DATE_FORMAT(date,'%Y-%m') parse_date, COUNT(*) total, count(os_pc) pc, count(os_mobile) mobile
+				</if>
+				<if test='searchCnd == "year"'>
+					DATE_FORMAT(date,'%Y') parse_date, COUNT(*) total, count(os_pc) pc, count(os_mobile) mobile
+				</if>
+				
+			</if>
+			FROM tb_stat_con
+			WHERE 1=1
+			<if test='engYn != null and engYn != ""'>
+				AND eng_yn = #{engYn}
+			</if>
+			<if test='startDate != null and startDate != ""'>
+				<if test='endDate != null  and endDate != ""'>
+					AND DATE_FORMAT(date,'%Y%m%d') >= DATE_FORMAT(#{startDate},'%Y%m%d')
+					<![CDATA[ AND DATE_FORMAT(date,'%Y%m%d') <= DATE_FORMAT(#{endDate},'%Y%m%d') ]]>
+				</if>
+				<if test='endDate == null or endDate  == ""'>
+					AND DATE_FORMAT(date,'%Y%m%d') >= DATE_FORMAT(#{startDate},'%Y%m%d')
+				</if>
+			</if>
+			<if test='endDate != null and endDate != ""'>
+				<if test='startDate == null or startDate == ""'>
+					<![CDATA[ AND DATE_FORMAT(date,'%Y%m%d') <= DATE_FORMAT(#{endDate},'%Y%m%d') ]]>
+				</if>
+			</if>
+			
+			<if test='searchCnd == null  or searchCnd == ""'>
+				GROUP BY DATE_FORMAT(date,'%Y-%m-%d %p %h:00')
+			</if>								
+			<if test='searchCnd != null and searchCnd != ""'>
+				<if test='searchCnd == "time"'>
+					GROUP BY DATE_FORMAT(date,'%Y-%m-%d %p %h:00')
+				</if>
+				<if test='searchCnd == "day"'>
+					GROUP BY DATE_FORMAT(date,'%Y-%m-%d')
+				</if>
+				<if test='searchCnd == "month"'>
+					GROUP BY DATE_FORMAT(date,'%Y-%m')
+				</if>
+				<if test='searchCnd == "year"'>
+					GROUP BY DATE_FORMAT(date,'%Y')
+				</if>
+			</if>
+		) z
+	</select>
+	
+		
+	<insert id="constatInsert">
+		INSERT into tb_stat_con
+		(
+			eng_yn,
+			ip,
+			os_pc,
+			os_mobile,
+			browser,
+			date
+		)
+		values
+		(
+			#{engYn},
+			#{ip},
+			#{osPc},
+			#{osMobile},
+			#{browser},
+			now()
+		)
+	</insert>
+	
+	
+	
+	<select id="selectVisitPageList" resultType="EgovMap">
+		SELECT * FROM
+		(
+			SELECT
+				COUNT(*) as viewCount,
+				menu_title,
+				URL,
+				eng_yn
+			FROM
+				tb_stat_page
+			Where 1=1
+			AND menu_title != ''
+			<if test='engYn != null and engYn != ""'>
+				AND eng_yn = #{engYn}
+			</if>
+			<if test='searchWrd != null and searchWrd != ""'>
+				<if test='searchCnd != null  and searchCnd != "" and searchCnd == "menuNm"'>
+					AND menu_title LIKE CONCAT ('%', #{searchWrd},'%')
+				</if>
+			</if>
+			<if test='startDate != null and startDate != ""'>
+				<if test='endDate != null  and endDate != ""'>
+					AND DATE_FORMAT(CON_DATE,'%Y%m%d') >= DATE_FORMAT(#{startDate},'%Y%m%d')
+					<![CDATA[ AND DATE_FORMAT(CON_DATE,'%Y%m%d') <= DATE_FORMAT(#{endDate},'%Y%m%d') ]]>
+				</if>
+				<if test='endDate == null or endDate  == ""'>
+					AND DATE_FORMAT(CON_DATE,'%Y%m%d') >= DATE_FORMAT(#{startDate},'%Y%m%d')
+				</if>
+			</if>
+			<if test='endDate != null and endDate != ""'>
+				<if test='startDate == null or startDate == ""'>
+					<![CDATA[ AND DATE_FORMAT(CON_DATE,'%Y%m%d') <= DATE_FORMAT(#{endDate},'%Y%m%d') ]]>
+				</if>
+			</if>
+			
+			GROUP BY  URL, menu_title, eng_yn
+			<if test='searchOrder != null and searchOrder  != ""'>
+				<if test='searchOrder == "max"'>
+					ORDER BY viewCount desc
+				</if>
+				<if test='searchOrder == "min"'>
+					ORDER BY viewCount asc
+				</if>
+			</if>
+			<if test='searchOrder == null or searchOrder == ""'>
+				ORDER BY viewCount desc
+			</if>
+		) t
+		<if test='recordCountPerPage > -1'>
+				<![CDATA[	LIMIT #{recordCountPerPage} OFFSET #{firstIndex}	]]>
+			</if>
+	</select>
+	
+	<select id="selectVisitPageListCnt" resultType="int">
+		SELECT
+		 COUNT(*)
+		FROM
+		(
+			SELECT
+				COUNT(*) as viewCount
+			FROM
+				tb_stat_page
+			Where 1=1
+			AND menu_title != ''
+			<if test='engYn != null and engYn != ""'>
+				AND eng_yn = #{engYn}
+			</if>
+			<if test='searchWrd != null and searchWrd != ""'>
+				<if test='searchCnd != null  and searchCnd != "" and searchCnd == "menuNm"'>
+					AND menu_title LIKE CONCAT ('%', #{searchWrd},'%')
+				</if>
+			</if>
+			<if test='startDate != null and startDate != ""'>
+				<if test='endDate != null  and endDate != ""'>
+					AND DATE_FORMAT(CON_DATE,'%Y%m%d') >= DATE_FORMAT(#{startDate},'%Y%m%d')
+					<![CDATA[ AND DATE_FORMAT(CON_DATE,'%Y%m%d') <= DATE_FORMAT(#{endDate},'%Y%m%d') ]]>
+				</if>
+				<if test='endDate == null or endDate  == ""'>
+					AND DATE_FORMAT(CON_DATE,'%Y%m%d') >= DATE_FORMAT(#{startDate},'%Y%m%d')
+				</if>
+			</if>
+			<if test='endDate != null and endDate != ""'>
+				<if test='startDate == null or startDate == ""'>
+					<![CDATA[ AND DATE_FORMAT(CON_DATE,'%Y%m%d') <= DATE_FORMAT(#{endDate},'%Y%m%d') ]]>
+				</if>
+			</if>		
+			GROUP BY  URL, menu_title, eng_yn
+		) t
+	</select>
+	
+	<select id="selectMenuName" resultType="egovMap">
+   			SELECT
+				a.menu_title AS menu1,
+				b.menu_title AS menu2,
+				c.menu_title AS menu3
+			FROM
+				tb_menuinfo a
+				LEFT OUTER JOIN tb_menuinfo b
+				ON a.PARENT_MENU_ID = b.MENU_ID
+				LEFT OUTER JOIN tb_menuinfo c
+				ON b.PARENT_MENU_ID = c.MENU_ID
+			WHERE 1=1
+				AND a.MENU_URL LIKE CONCAT('%',#{url},'%')
+				AND a.PARENT_MENU_ID != '0'
+			LIMIT 1
+	</select>
+	
+	<select id="selectEngMenuName" resultType="egovMap">
+   			SELECT
+				a.menu_title_eng AS menu1,
+				b.menu_title_eng AS menu2,
+				c.menu_title_eng AS menu3
+			FROM
+				tb_menuinfo a
+				LEFT OUTER JOIN tb_menuinfo b
+				ON a.PARENT_MENU_ID = b.MENU_ID
+				LEFT OUTER JOIN tb_menuinfo c
+				ON b.PARENT_MENU_ID = c.MENU_ID
+			WHERE 1=1
+				AND a.MENU_URL_ENG LIKE CONCAT('%',#{url},'%')
+				AND a.PARENT_MENU_ID != '0'
+			LIMIT 1
+	</select>
+	
+	<insert id="selectVisitPageInsert">
+		INSERT into tb_stat_page
+		(
+			eng_yn,
+			menu_title,
+			url,
+			con_date
+		)
+		values
+		(
+			#{engYn},
+			#{menuTitle},
+			#{url},
+			now()
+		)
+	</insert>
+	
+	
+</mapper>

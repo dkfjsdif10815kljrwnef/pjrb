@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cmsMainBbsDAO">
+	
+	<select id="mainBbsList" resultType="egovMap">
+		<![CDATA[	
+			select z.* from 
+   				(		
+					SELECT
+						a.*
+						,(SELECT bbs_nm FROM tb_bbsmaster WHERE bbs_id = a.bbs_id) AS bbsNm
+						,CASE WHEN a.bbs_tp = '1' or a.bbs_tp = '4'
+						THEN (SELECT ADD_FIELD_CN FROM tb_bbsaddfield WHERE bbs_id = a.bbs_id AND ntt_no = a.ntt_no AND seq = '1' )
+						ELSE (SELECT ntt_sj FROM tb_bbs_contents WHERE bbs_id = a.bbs_id AND ntt_no = a.ntt_no)
+						END AS title
+						,CASE WHEN a.bbs_tp = '1' or a.bbs_tp = '4'
+						THEN (SELECT reg_date FROM tb_bbs WHERE bbs_id = a.bbs_id AND ntt_no = a.ntt_no)
+						ELSE (SELECT reg_date FROM tb_bbs_contents WHERE bbs_id = a.bbs_id AND ntt_no = a.ntt_no)
+						END AS bbsRegDate
+					from tb_main_bbs a
+				) z
+				where 1=1
+		]]>
+			<if test='searchType != null and searchType != ""'>
+				<![CDATA[AND	type = #{searchType}	]]>
+			</if>
+			<if test='searchStatus != null and searchStatus != ""'>
+				<![CDATA[AND	use_yn = #{searchStatus}	]]>
+			</if>
+			<if test='searchCnd != null and searchCnd != "" and searchCnd == "all"'>
+				<![CDATA[AND	(bbsNm LIKE CONCAT('%',#{searchWrd} ,'%') OR title LIKE CONCAT('%',#{searchWrd} ,'%'))	]]>
+			</if>
+			<if test='searchCnd != null and searchCnd != "" and searchCnd == "bbsNm"'>
+				<![CDATA[AND	bbsNm LIKE CONCAT('%',#{searchWrd} ,'%')	]]>
+			</if>
+			<if test='searchCnd != null and searchCnd != "" and searchCnd == "title"'>
+				<![CDATA[AND	title LIKE CONCAT('%',#{searchWrd} ,'%')	]]>
+			</if>
+		<![CDATA[
+			ORDER BY bbsRegDate desc, reg_date desc
+		]]>
+		<!-- <if test='recordCountPerPage > -1'>
+			<![CDATA[	LIMIT #{recordCountPerPage} OFFSET #{firstIndex}	]]>
+		</if> -->
+	</select>
+		
+	<select id="mainBbsListCnt" resultType="int">
+   			select count(*) from 
+   				(
+   					SELECT
+						a.*
+						,(SELECT bbs_nm FROM tb_bbsmaster WHERE bbs_id = a.bbs_id) AS bbsNm
+						,CASE WHEN a.bbs_tp = '1' or a.bbs_tp = '4'
+						THEN (SELECT ADD_FIELD_CN FROM tb_bbsaddfield WHERE bbs_id = a.bbs_id AND ntt_no = a.ntt_no AND seq = '1' )
+						ELSE (SELECT ntt_sj FROM tb_bbs_contents WHERE bbs_id = a.bbs_id AND ntt_no = a.ntt_no)
+						END AS title
+						,CASE WHEN a.bbs_tp = '1' or a.bbs_tp = '4'
+						THEN (SELECT reg_date FROM tb_bbs WHERE bbs_id = a.bbs_id AND ntt_no = a.ntt_no)
+						ELSE (SELECT reg_date FROM tb_bbs_contents WHERE bbs_id = a.bbs_id AND ntt_no = a.ntt_no)
+						END AS bbsRegDate
+					from tb_main_bbs a
+				) z
+				where 1=1
+				<if test='searchType != null and searchType != ""'>
+					<![CDATA[AND	type = #{searchType}	]]>
+				</if>
+				<if test='searchStatus != null and searchStatus != ""'>
+					<![CDATA[AND	use_yn = #{searchStatus}	]]>
+				</if>
+				<if test='searchCnd != null and searchCnd != "" and searchCnd == "all"'>
+					<![CDATA[AND	(bbsNm LIKE CONCAT('%',#{searchWrd} ,'%') OR title LIKE CONCAT('%',#{searchWrd} ,'%'))	]]>
+				</if>
+				<if test='searchCnd != null and searchCnd != "" and searchCnd == "bbsNm"'>
+					<![CDATA[AND	bbsNm LIKE CONCAT('%',#{searchWrd} ,'%')	]]>
+				</if>
+				<if test='searchCnd != null and searchCnd != "" and searchCnd == "title"'>
+					<![CDATA[AND	title LIKE CONCAT('%',#{searchWrd} ,'%')	]]>
+				</if>
+	</select>
+	
+	<insert id="mainBbsInsert">
+		<![CDATA[
+			insert into tb_main_bbs
+			(
+				TYPE, BBS_ID, NTT_NO, BBS_TP, USE_YN, REG_DATE
+			)
+			values
+			(
+				#{type}, #{bbsId}, #{nttNo}, #{bbsTp}, #{useYn}, now()
+			)
+		]]>
+	</insert>
+	
+	<update id="mainBbsUpdate">
+			update tb_main_bbs set
+				TYPE = #{type},
+				BBS_ID = #{bbsId},
+				NTT_NO = #{nttNo},
+				BBS_TP = #{bbsTp},
+				USE_YN = #{useYn},
+				MOD_DATE = now()
+			where seq = #{seq}
+	</update>
+	
+	<delete id="mainBbsDelete">
+			delete from tb_main_bbs
+			where seq = #{seq}
+	</delete>
+	
+	<select id="mainBbsModalList" resultType="egovMap">
+		<![CDATA[			
+			select * from 
+				(
+					SELECT
+						c.bbs_nm AS bbsNm
+						,b.add_field_cn AS title
+						,a.bbs_id AS bbsId
+						,a.ntt_no AS nttNo
+						,a.NTT_CN AS nttCn
+						,a.REG_DATE AS regDate
+						,c.BBS_TP AS bbsTp
+					from tb_bbs a
+					LEFT JOIN tb_bbsaddfield B
+					ON A.BBS_ID = B.BBS_ID AND a.NTT_NO = b.ntt_no AND b.seq = '1'
+					LEFT JOIN tb_bbsmaster c
+					ON A.BBS_ID = c.BBS_ID
+					where a.use_yn = 'Y' AND c.use_yn = 'Y'
+				) z
+				where 1=1
+		]]>
+		<if test='searchCnd != null and searchCnd != "" and searchCnd == "all"'>
+			<![CDATA[AND	(bbsNm LIKE CONCAT('%',#{searchWrd} ,'%') OR title LIKE CONCAT('%',#{searchWrd} ,'%'))	]]>
+		</if>
+		<if test='searchCnd != null and searchCnd != "" and searchCnd == "bbsNm"'>
+			<![CDATA[AND	bbsNm LIKE CONCAT('%',#{searchWrd} ,'%')	]]>
+		</if>
+		<if test='searchCnd != null and searchCnd != "" and searchCnd == "title"'>
+			<![CDATA[AND	title LIKE CONCAT('%',#{searchWrd} ,'%')	]]>
+		</if>
+		<![CDATA[
+			order by regDate desc
+		]]>
+		<if test='recordCountPerPage > -1'>
+			<![CDATA[	LIMIT #{recordCountPerPage} OFFSET #{firstIndex}	]]>
+		</if>
+	</select>
+		
+	<select id="mainBbsModalListCnt" resultType="int">
+		SELECT COUNT(*) FROM
+			(
+				SELECT * FROM 
+					(
+						SELECT
+							c.bbs_nm AS bbsNm
+							,b.add_field_cn AS title
+							,a.bbs_id AS bbsId
+							,a.ntt_no AS nttNo
+							,a.NTT_CN AS nttCn
+							,a.REG_DATE AS regDate
+							,c.BBS_TP AS bbsTp
+						from tb_bbs a
+						LEFT JOIN tb_bbsaddfield B
+						ON A.BBS_ID = B.BBS_ID AND a.NTT_NO = b.ntt_no AND b.seq = '1'
+						LEFT JOIN tb_bbsmaster c
+						ON A.BBS_ID = c.BBS_ID
+						where a.use_yn = 'Y' AND c.use_yn = 'Y'
+					) z
+					where 1=1
+					<if test='searchCnd != null and searchCnd != "" and searchCnd == "all"'>
+						<![CDATA[AND	(bbsNm LIKE CONCAT('%',#{searchWrd} ,'%') OR title LIKE CONCAT('%',#{searchWrd} ,'%'))	]]>
+					</if>
+					<if test='searchCnd != null and searchCnd != "" and searchCnd == "bbsNm"'>
+						<![CDATA[AND	bbsNm LIKE CONCAT('%',#{searchWrd} ,'%')	]]>
+					</if>
+					<if test='searchCnd != null and searchCnd != "" and searchCnd == "title"'>
+						<![CDATA[AND	title LIKE CONCAT('%',#{searchWrd} ,'%')	]]>
+					</if>
+			) k
+	</select>
+	
+	<select id="mainBbsContentsModalList" resultType="egovMap">
+		<![CDATA[		
+			select * from 
+				(	
+					SELECT 
+						c.bbs_nm AS bbsNm
+						,a.ntt_sj AS title
+						,a.bbs_id AS bbsId
+						,a.ntt_no AS nttNo
+						,a.NTT_CN AS nttCn
+						,a.REG_DATE AS regDate
+						,c.BBS_TP AS bbsTp
+					FROM tb_bbs_contents a
+					LEFT JOIN tb_bbsmaster c
+					ON A.BBS_ID = c.BBS_ID
+					where a.use_yn = 'Y' AND c.use_yn = 'Y'
+				) z
+				where 1=1
+		]]>
+		<if test='searchCnd != null and searchCnd != "" and searchCnd == "all"'>
+			<![CDATA[AND	(bbsNm LIKE CONCAT('%',#{searchWrd} ,'%') OR title LIKE CONCAT('%',#{searchWrd} ,'%'))	]]>
+		</if>
+		<if test='searchCnd != null and searchCnd != "" and searchCnd == "bbsNm"'>
+			<![CDATA[AND	bbsNm LIKE CONCAT('%',#{searchWrd} ,'%')	]]>
+		</if>
+		<if test='searchCnd != null and searchCnd != "" and searchCnd == "title"'>
+			<![CDATA[AND	title LIKE CONCAT('%',#{searchWrd} ,'%')	]]>
+		</if>
+		<![CDATA[
+			order by regDate desc
+		]]>
+		<if test='recordCountPerPage > -1'>
+			<![CDATA[	LIMIT #{recordCountPerPage} OFFSET #{firstIndex}	]]>
+		</if>
+	</select>
+		
+	<select id="mainBbsContentsModalListCnt" resultType="int">
+		SELECT COUNT(*) FROM
+			(
+				SELECT * FROM 
+					(
+						SELECT 
+							c.bbs_nm AS bbsNm
+							,a.ntt_sj AS title
+							,a.bbs_id AS bbsId
+							,a.ntt_no AS nttNo
+							,a.NTT_CN AS nttCn
+							,a.REG_DATE AS regDate
+							,c.BBS_TP AS bbsTp
+						FROM tb_bbs_contents a
+						LEFT JOIN tb_bbsmaster c
+						ON A.BBS_ID = c.BBS_ID
+						where a.use_yn = 'Y' AND c.use_yn = 'Y'
+					) z
+					where 1=1
+					<if test='searchCnd != null and searchCnd != "" and searchCnd == "all"'>
+						<![CDATA[AND	(bbsNm LIKE CONCAT('%',#{searchWrd} ,'%') OR title LIKE CONCAT('%',#{searchWrd} ,'%'))	]]>
+					</if>
+					<if test='searchCnd != null and searchCnd != "" and searchCnd == "bbsNm"'>
+						<![CDATA[AND	bbsNm LIKE CONCAT('%',#{searchWrd} ,'%')	]]>
+					</if>
+					<if test='searchCnd != null and searchCnd != "" and searchCnd == "title"'>
+						<![CDATA[AND	title LIKE CONCAT('%',#{searchWrd} ,'%')	]]>
+					</if>
+			) k
+	</select>
+	
+</mapper>

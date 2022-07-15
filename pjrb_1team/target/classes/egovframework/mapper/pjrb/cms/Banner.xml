@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cmsBannerDAO">
+
+	
+	<select id="bannerList" resultType="egovMap">
+		<![CDATA[			
+			select * 
+			from tb_banner 
+			where 1=1
+		]]>
+			<if test='purpose != null and purpose != ""'>
+				 <![CDATA[AND	purpose = #{purpose} ]]>
+			</if>
+			<if test='searchStatus != null and searchStatus != ""'>
+				<![CDATA[ANd	status = #{searchStatus}	]]>
+			</if>
+			<if test='searchEngYn != null and searchEngYn != ""'>
+				<![CDATA[ANd	eng_yn = #{searchEngYn}	]]>
+			</if>
+			<if test='searchCnd != null and searchCnd != "" and searchCnd == "all"'>
+				<![CDATA[AND	(type LIKE CONCAT('%',#{searchWrd} ,'%') OR title LIKE CONCAT('%',#{searchWrd} ,'%') OR detail LIKE CONCAT('%',#{searchWrd} ,'%'))	]]>
+			</if>
+			<if test='searchCnd != null and searchCnd != "" and searchCnd == "type"'>
+				<![CDATA[AND	type LIKE CONCAT('%',#{searchWrd} ,'%')	]]>
+			</if>
+			<if test='searchCnd != null and searchCnd != "" and searchCnd == "title"'>
+				<![CDATA[AND	title LIKE CONCAT('%',#{searchWrd} ,'%')	]]>
+			</if>
+			<if test='searchCnd != null and searchCnd != "" and searchCnd == "detail"'>
+				<![CDATA[AND	detail LIKE CONCAT('%',#{searchWrd} ,'%')	]]>
+			</if>
+		<![CDATA[
+			order by REG_DATE desc, title asc
+		]]>			
+		<if test='recordCountPerPage > -1'>
+			<![CDATA[	LIMIT #{recordCountPerPage} OFFSET #{firstIndex}	]]>
+		</if>
+	</select>
+		
+	<select id="bannerListCnt" resultType="int">
+   			select count(*)
+			from tb_banner 
+			where 1=1
+			<if test='purpose != null and purpose != ""'>
+				 <![CDATA[AND	purpose = #{purpose} ]]>
+			</if>
+			<if test='searchStatus != null and searchStatus != ""'>
+				<![CDATA[ANd	status = #{searchStatus}	]]>
+			</if>
+			<if test='searchEngYn != null and searchEngYn != ""'>
+				<![CDATA[ANd	eng_yn = #{searchEngYn}	]]>
+			</if>
+			<if test='searchCnd != null and searchCnd != "" and searchCnd == "all"'>
+				<![CDATA[AND	(type LIKE CONCAT('%',#{searchWrd} ,'%') OR title LIKE CONCAT('%',#{searchWrd} ,'%') OR detail LIKE CONCAT('%',#{searchWrd} ,'%'))	]]>
+			</if>
+			<if test='searchCnd != null and searchCnd != "" and searchCnd == "type"'>
+				<![CDATA[AND	type LIKE CONCAT('%',#{searchWrd} ,'%')	]]>
+			</if>
+			<if test='searchCnd != null and searchCnd != "" and searchCnd == "title"'>
+				<![CDATA[AND	title LIKE CONCAT('%',#{searchWrd} ,'%')	]]>
+			</if>
+			<if test='searchCnd != null and searchCnd != "" and searchCnd == "detail"'>
+				<![CDATA[AND	detail LIKE CONCAT('%',#{searchWrd} ,'%')	]]>
+			</if>
+	</select>
+	
+	<insert id="bannerInsert">
+		<![CDATA[
+			insert into tb_banner
+			(
+				eng_yn, type, purpose, title, detail, banner_detail, status, atch_file_id, reg_date, mod_date, login_chk
+			)
+			values
+			(
+				#{engYn}, #{type}, #{purpose}, #{title}, #{detail}, #{bannerDetail}, #{status}, #{atchFileId}, now(), now(), #{loginChk}
+			)
+		]]>
+	</insert>
+	
+	<update id="bannerUpdate">
+			update tb_banner set
+				eng_yn = #{engYn},
+				type = #{type}, 
+				purpose = #{purpose},
+				title = #{title},
+				detail = #{detail},
+				banner_detail = #{bannerDetail},
+				status = #{status},
+				atch_file_id = #{atchFileId},
+				mod_date = now(),
+				login_chk = #{loginChk}
+			where seq = #{seq}
+	</update>
+	
+	<update id="bannerStatusUpdate">
+			update tb_banner set
+				STATUS = #{status},
+				MOD_DATE = now()
+			where seq = #{seq}
+	</update>
+	
+	<delete id="bannerDelete">
+			delete from tb_banner
+			where seq = #{seq}
+	</delete>
+	
+	<select id="bannerView" resultType="egovMap">
+			select *
+			from tb_banner 
+			where 1=1
+			and seq = #{seq}
+	</select>
+	
+</mapper>
